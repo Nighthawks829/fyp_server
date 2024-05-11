@@ -25,6 +25,14 @@ const login = async (req, res) => {
   }
 
   const token = user.generateJWT();
+
+  res.cookie("jwt", token, {
+    httpOnly: true,
+    secure: false, // Use secure cookies in production
+    sameSite: "strict",
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+  });
+
   res.status(StatusCodes.OK).json({
     user: {
       userId: user.id,
