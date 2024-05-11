@@ -69,6 +69,12 @@ const UserSchema = sequelize.define(
   {
     timestamps: false,
     freezeTableName: true,
+    hooks: {
+      beforeCreate: async (user) => {
+        const salt = await bcrypt.genSalt(10);
+        user.passowrd = await bcrypt.hash(user.passowrd, salt);
+      },
+    },
   }
 );
 
