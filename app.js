@@ -12,10 +12,10 @@ const app = express();
 const sequelize = require("./db/connect");
 
 // import middleware
+const notFoundMiddleware = require("./middleware/not-found");
+const errorHandlerMiddleware = require("./middleware/error-handler");
 
 // import routes
-
-// import error handler
 
 app.use(express.json());
 app.use(helmet());
@@ -30,6 +30,8 @@ app.get("/", (req, res) => {
 // routes
 
 // middleware
+app.use(notFoundMiddleware);
+app.use(errorHandlerMiddleware);
 
 const port = process.env.PORT || 5000;
 
