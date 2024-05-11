@@ -1,5 +1,8 @@
 const { DataTypes, Sequelize } = require("sequelize");
 const sequelize = require("../db/connect");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+require("dotenv").config({ path: "../.env" });
 
 const UserSchema = sequelize.define(
   "Users",
@@ -69,6 +72,20 @@ const UserSchema = sequelize.define(
   }
 );
 
+UserSchema.prototype.validPassword = async function (password) {
+  return await bcrypt.compare(password, this.passowrd);
+};
+
+UserSchema.prototype.generateJWT = function () {
+  return jwt.sign(
+    { userId: this.id, name: this.name, email: this.email, role: this.role },
+    process.env.SECRET,
+    {
+      expiresIn: process.env.JWT_LIFETIME,
+    }
+  );
+};
+
 sequelize
   .sync()
   .then(() => {
@@ -78,4 +95,4 @@ sequelize
     console.log("Unable to create Users table: ", error);
   });
 
-module.exports = UserSchema
+module.exports = UserSchema;
