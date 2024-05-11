@@ -16,12 +16,12 @@ const login = async (req, res) => {
   });
 
   if (!user) {
-    throw new UnauthenticatedError("Invalid Credentials");
+    throw new UnauthenticatedError("Invalid Email Address");
   }
 
   const isPasswordCorrect = await user.validPassword(password);
   if (!isPasswordCorrect) {
-    throw new UnauthenticatedError("Invalid Credentials");
+    throw new UnauthenticatedError("Invalid Password");
   }
 
   const token = user.generateJWT();
@@ -34,4 +34,8 @@ const login = async (req, res) => {
       role: role,
     },
   });
+};
+
+module.exports = {
+  login,
 };
