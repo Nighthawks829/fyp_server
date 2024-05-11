@@ -34,7 +34,7 @@ const UserSchema = sequelize.define(
         },
       },
     },
-    passowrd: {
+    password: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
@@ -72,20 +72,20 @@ const UserSchema = sequelize.define(
     hooks: {
       beforeCreate: async (user) => {
         const salt = await bcrypt.genSalt(10);
-        user.passowrd = await bcrypt.hash(user.passowrd, salt);
+        user.password = await bcrypt.hash(user.password, salt);
       },
     },
   }
 );
 
 UserSchema.prototype.validPassword = async function (password) {
-  return await bcrypt.compare(password, this.passowrd);
+  return await bcrypt.compare(password, this.password);
 };
 
 UserSchema.prototype.generateJWT = function () {
   return jwt.sign(
     { userId: this.id, name: this.name, email: this.email, role: this.role },
-    process.env.SECRET,
+    process.env.JWT_SECRET,
     {
       expiresIn: process.env.JWT_LIFETIME,
     }
