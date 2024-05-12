@@ -1,6 +1,10 @@
 const User = require("../models/Users");
 const { StatusCodes } = require("http-status-codes");
-const { BadRequestError, UnauthenticatedError } = require("../errors");
+const {
+  BadRequestError,
+  UnauthenticatedError,
+  NotFoundError,
+} = require("../errors");
 const { use } = require("express/lib/router");
 
 const addUser = async (req, res) => {
@@ -12,7 +16,6 @@ const addUser = async (req, res) => {
     password: password,
     role: role,
   });
-
 
   const token = user.generateJWT();
   res.status(StatusCodes.CREATED).json({
@@ -26,6 +29,13 @@ const addUser = async (req, res) => {
   });
 };
 
+const getAllUsers = async (req, res) => {
+  const users = await User.findAll();
+
+  res.status(StatusCodes.OK).json({ users, count: users.length });
+};
+
 module.exports = {
   addUser,
+  getAllUsers,
 };

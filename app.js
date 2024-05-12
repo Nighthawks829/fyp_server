@@ -35,7 +35,7 @@ app.get("/", (req, res) => {
 
 // routes
 app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/user", authenticateAdmin, userRouter);
+app.use("/api/v1/user", authenticateUser, userRouter);
 
 // middleware
 app.use(notFoundMiddleware);
