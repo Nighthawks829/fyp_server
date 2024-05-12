@@ -35,7 +35,23 @@ const getAllUsers = async (req, res) => {
   res.status(StatusCodes.OK).json({ users, count: users.length });
 };
 
+const getUser = async (req, res) => {
+  const user = await User.findByPk(req.params.id);
+
+  if (user) {
+    res.status(StatusCodes.OK).json({
+      userId: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    });
+  } else {
+    throw new NotFoundError(`No user with id ${req.params.id}`);
+  }
+};
+
 module.exports = {
   addUser,
   getAllUsers,
+  getUser,
 };
