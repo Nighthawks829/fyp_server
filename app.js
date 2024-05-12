@@ -13,7 +13,8 @@ const app = express();
 const sequelize = require("./db/connect");
 
 // import middleware
-const authenticateUser = require("./middleware/authentication");
+const authenticateUser = require("./middleware/authenticationUser");
+const authenticateAdmin = require("./middleware/authenticationAdmin");
 const notFoundMiddleware = require("./middleware/not-found");
 const errorHandlerMiddleware = require("./middleware/error-handler");
 
@@ -34,7 +35,7 @@ app.get("/", (req, res) => {
 
 // routes
 app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/user", authenticateUser, userRouter);
+app.use("/api/v1/user", authenticateAdmin, userRouter);
 
 // middleware
 app.use(notFoundMiddleware);

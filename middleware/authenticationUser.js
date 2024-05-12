@@ -1,7 +1,8 @@
 const jwt = require("jsonwebtoken");
 const { UnauthenticatedError } = require("../errors");
+require("dotenv").config({ path: "../.env" });
 
-const auth = async (req, res, next) => {
+const authUser = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer")) {
     throw new UnauthenticatedError("Authentication Invalid");
@@ -24,4 +25,4 @@ const auth = async (req, res, next) => {
   }
 };
 
-module.exports = auth;
+module.exports = authUser;
