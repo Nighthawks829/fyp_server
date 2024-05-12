@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { UnauthenticatedError } = require("../errors");
-require("dotenv").config({ path: "../.env" });
+require("dotenv").config();
 
 const authAdmin = async (req, res, next) => {
   const authHeader = req.headers.authorization;

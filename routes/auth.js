@@ -3,7 +3,7 @@ const router = express.Router();
 const rateLimiter = require("express-rate-limit");
 const { login, logout } = require("../controllers/auth");
 
-require("dotenv").config({ path: "../.env" });
+require("dotenv").config();
 
 // 1000 request in development. 100 requests for production environment
 const apiLimiter = rateLimiter({

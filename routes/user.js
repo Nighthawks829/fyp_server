@@ -1,8 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const rateLimiter = require("express-rate-limit");
-const { addUser, getAllUsers, getUser } = require("../controllers/user");
-require("dotenv").config({ path: "../.env" });
+const {
+  addUser,
+  getAllUsers,
+  getUser,
+  updateUser,
+} = require("../controllers/user");
+const { route } = require("express/lib/router");
+require("dotenv").config();
 
 // 1000 request in development. 100 requests for production environment
 const apiLimiter = rateLimiter({
@@ -16,7 +22,6 @@ const apiLimiter = rateLimiter({
 router.post("/addUser", addUser);
 router.get("/getAllUser", getAllUsers);
 router.get("/getUser/:id", getUser);
-
-router.route("/");
+router.patch("/updateUser/:id", updateUser);
 
 module.exports = router;

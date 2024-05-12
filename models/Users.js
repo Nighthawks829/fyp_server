@@ -2,7 +2,7 @@ const { DataTypes, Sequelize } = require("sequelize");
 const sequelize = require("../db/connect");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-require("dotenv").config({ path: "../.env" });
+require("dotenv").config();
 
 const UserSchema = sequelize.define(
   "Users",
@@ -73,6 +73,13 @@ const UserSchema = sequelize.define(
       beforeCreate: async (user) => {
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(user.password, salt);
+      },
+      beforeUpdate: async (user) => {
+        if (user.changed("password")) {
+          const salt = await bcrypt.genSalt(10);
+          user.password = await bcrypt.hash(user.password, salt);
+          user.updateAt = new Date();
+        }
       },
     },
   }
