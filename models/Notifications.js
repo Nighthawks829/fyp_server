@@ -13,6 +13,14 @@ const NotificationSchema = sequelize.define(
       primaryKey: true,
       allowNull: false,
     },
+    userId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+    sensorId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
     name: {
       type: DataTypes.STRING,
       allowNull: false,

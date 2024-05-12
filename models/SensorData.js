@@ -12,6 +12,10 @@ const SensorDataSchema = sequelize.define(
       primaryKey: true,
       allowNull: false,
     },
+    sensorId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
     data: {
       type: DataTypes.DOUBLE,
       allowNull: false,
