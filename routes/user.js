@@ -9,6 +9,10 @@ const {
   deleteUser,
 } = require("../controllers/user");
 const { route } = require("express/lib/router");
+
+const authenticateUser = require("../middleware/authenticationUser");
+const authenticateAdmin = require("../middleware/authenticationAdmin");
+
 require("dotenv").config();
 
 // 1000 request in development. 100 requests for production environment
@@ -20,10 +24,15 @@ const apiLimiter = rateLimiter({
   },
 });
 
-router.post("/addUser", addUser);
-router.get("/getAllUser", getAllUsers);
-router.get("/getUser/:id", getUser);
-router.patch("/updateUser/:id", updateUser);
-router.delete("/deleteUser/:id", deleteUser);
+router
+  .route("/")
+  .get(authenticateUser, getAllUsers)
+  .post(authenticateAdmin, addUser);
+
+router
+  .route("/:id")
+  .get(authenticateUser, getUser)
+  .patch(authenticateAdmin, updateUser)
+  .delete(authenticateAdmin, deleteUser);
 
 module.exports = router;

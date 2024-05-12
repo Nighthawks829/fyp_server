@@ -80,6 +80,9 @@ const updateUser = async (req, res) => {
 
   const respond = await user.save();
 
+  console.log(ownId)
+  console.log(userId)
+
   // Check if the own user profile changed.
   // Then update own user profile and generate new token
   if (

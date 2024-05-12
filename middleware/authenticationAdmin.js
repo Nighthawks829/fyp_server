@@ -2,9 +2,9 @@ const jwt = require("jsonwebtoken");
 const { UnauthenticatedError } = require("../errors");
 require("dotenv").config();
 
-const authAdmin = async (req, res, next) => {
+const authUser = async (req, res, next) => {
   const authHeader = req.headers.authorization;
-  if (!authHeader || authHeader.startsWith("Bearer")) {
+  if (!authHeader || !authHeader.startsWith("Bearer")) {
     throw new UnauthenticatedError("Authentication Invalid");
   }
 
@@ -12,7 +12,8 @@ const authAdmin = async (req, res, next) => {
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
 
-    // attach the admin to other routes
+
+    // attach the user to the other routes
     req.user = {
       userId: payload.userId,
       name: payload.name,
@@ -23,10 +24,11 @@ const authAdmin = async (req, res, next) => {
     if (payload.role !== "admin") {
       throw new UnauthenticatedError("Authentication Invalid");
     }
+
     next();
   } catch (error) {
     throw new UnauthenticatedError("Authentication Invalid");
   }
 };
 
-module.exports = authAdmin;
+module.exports = authUser;
