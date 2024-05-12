@@ -78,6 +78,11 @@ const BoardSchame = sequelize.define(
   {
     timestamps: false,
     freezeTableName: true,
+    hooks: {
+      beforeUpdate: async (board) => {
+        board.updatedAt = new Date();
+      },
+    },
   }
 );
 

@@ -47,13 +47,55 @@ const addBoard = async (req, res) => {
       image: image,
       userId: userId,
     });
-  }else{
-    throw new BadRequestError("Unable to create new board. Try again later.")
+  } else {
+    throw new BadRequestError("Unable to create new board. Try again later.");
   }
+};
+
+const updateBoard = async (req, res) => {
+  const {
+    body: { name, type, location, ip_address, image, userId },
+    params: { id: boardId },
+  } = req;
+
+  if (!name || !type || !location || !ip_address || !userId) {
+    throw new BadRequestError("Please provide all values");
+  }
+
+  const board = await Board.findByPk(boardId);
+
+  // Store the old data
+  const oldData = {
+    name: board.name,
+    type: board.type,
+    location: board.location,
+    ip_address: board.ip_address,
+    image: board.image,
+  };
+
+  board.name = name;
+  board.type = type;
+  board.location = location;
+  board.ip_address = ip_address;
+  board.image = image;
+
+  const respond = await board.save();
+
+  res.status(StatusCodes.OK).json({
+    board: {
+      name: board.name,
+      type: board.type,
+      location: board.location,
+      ip_address: board.ip_address,
+      image: board.image,
+      userId: userId,
+    },
+  });
 };
 
 module.exports = {
   getAllBoards,
   getBoard,
   addBoard,
+  updateBoard,
 };
