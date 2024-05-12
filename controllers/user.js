@@ -80,7 +80,7 @@ const updateUser = async (req, res) => {
 
   const respond = await user.save();
 
-  // Check if the own user profile changed. 
+  // Check if the own user profile changed.
   // Then update own user profile and generate new token
   if (
     ownId === userId &&
@@ -124,9 +124,25 @@ const updateUser = async (req, res) => {
   }
 };
 
+const deleteUser = async (req, res) => {
+  const user = await User.destroy({
+    where: {
+      id: req.params.id,
+    },
+  });
+  if (!user) {
+    throw new NotFoundError(`No user with id ${req.params.id}`);
+  }
+
+  res
+    .status(StatusCodes.OK)
+    .json({ msg: `Success delete user ${req.params.id}` });
+};
+
 module.exports = {
   addUser,
   getAllUsers,
   getUser,
   updateUser,
+  deleteUser
 };

@@ -6,6 +6,7 @@ const {
   getAllUsers,
   getUser,
   updateUser,
+  deleteUser,
 } = require("../controllers/user");
 const { route } = require("express/lib/router");
 require("dotenv").config();
@@ -23,5 +24,6 @@ router.post("/addUser", addUser);
 router.get("/getAllUser", getAllUsers);
 router.get("/getUser/:id", getUser);
 router.patch("/updateUser/:id", updateUser);
+router.delete("/deleteUser/:id", deleteUser);
 
 module.exports = router;
