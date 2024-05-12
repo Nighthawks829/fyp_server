@@ -1,21 +1,17 @@
 const User = require("../models/Users");
 const { StatusCodes } = require("http-status-codes");
-const {
-  BadRequestError,
-  UnauthenticatedError,
-  NotFoundError,
-} = require("../errors");
-const { use } = require("express/lib/router");
+const { BadRequestError, NotFoundError } = require("../errors");
 const bcrypt = require("bcrypt");
 
 const addUser = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, image } = req.body;
 
   const user = await User.create({
     name: name,
     email: email,
     password: password,
     role: role,
+    image: image,
   });
 
   const token = user.generateJWT();
@@ -25,6 +21,7 @@ const addUser = async (req, res) => {
       email: email,
       password: password,
       role: role,
+      image: user.image,
     },
     token,
   });
@@ -45,6 +42,7 @@ const getUser = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      image: user.image,
     });
   } else {
     throw new NotFoundError(`No user with id ${req.params.id}`);
@@ -69,6 +67,7 @@ const updateUser = async (req, res) => {
     email: user.email,
     name: user.name,
     role: user.role,
+    image: user.image,
   };
 
   const isPassswordSame = await bcrypt.compare(password, user.password);
@@ -80,8 +79,8 @@ const updateUser = async (req, res) => {
 
   const respond = await user.save();
 
-  console.log(ownId)
-  console.log(userId)
+  console.log(ownId);
+  console.log(userId);
 
   // Check if the own user profile changed.
   // Then update own user profile and generate new token
@@ -92,6 +91,7 @@ const updateUser = async (req, res) => {
         email: user.email,
         name: user.name,
         role: user.role,
+        image: user.image,
       }) ||
       !isPassswordSame)
   ) {
@@ -147,5 +147,5 @@ module.exports = {
   getAllUsers,
   getUser,
   updateUser,
-  deleteUser
+  deleteUser,
 };

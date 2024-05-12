@@ -8,7 +8,6 @@ const {
   updateUser,
   deleteUser,
 } = require("../controllers/user");
-const { route } = require("express/lib/router");
 
 const authenticateUser = require("../middleware/authenticationUser");
 const authenticateAdmin = require("../middleware/authenticationAdmin");
