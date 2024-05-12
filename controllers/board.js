@@ -26,7 +26,34 @@ const getBoard = async (req, res) => {
   }
 };
 
+const addBoard = async (req, res) => {
+  const { name, type, location, ip_address, image, userId } = req.body;
+
+  const board = await Board.create({
+    name: name,
+    type: type,
+    location: location,
+    ip_address: ip_address,
+    image: image,
+    userId: userId,
+  });
+
+  if (board) {
+    res.status(StatusCodes.CREATED).json({
+      name: name,
+      type: type,
+      location: location,
+      ip_address: ip_address,
+      image: image,
+      userId: userId,
+    });
+  }else{
+    throw new BadRequestError("Unable to create new board. Try again later.")
+  }
+};
+
 module.exports = {
   getAllBoards,
-  getBoard
+  getBoard,
+  addBoard,
 };

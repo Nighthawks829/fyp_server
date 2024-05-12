@@ -14,6 +14,9 @@ const errorHandlerMiddleware = (err, req, res, next) => {
     customError.msg = err.errors[0].message;
     customError.msg =
       customError.msg.charAt(0).toUpperCase() + customError.msg.slice(1);
+    if (customError.msg.slice(0, 10) === "Ip_address") {
+      customError.msg = "IP address must be unique";
+    }
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
 
@@ -33,6 +36,10 @@ const errorHandlerMiddleware = (err, req, res, next) => {
   // validation defined in the Sequelize model fails.
   if (err.name === "SequelizeValidationError") {
     customError.msg = err.errors[0].message;
+    if (customError.msg.slice(-4) === "null") {
+      customError.msg = customError.msg.replace(/\./g, " ");
+      console.log(customError.msg);
+    }
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
 

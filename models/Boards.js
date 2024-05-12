@@ -12,6 +12,10 @@ const BoardSchame = sequelize.define(
       primaryKey: true,
       allowNull: false,
     },
+    userId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
     name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -45,6 +49,7 @@ const BoardSchame = sequelize.define(
     ip_address: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
       validate: {
         is: {
           args: [

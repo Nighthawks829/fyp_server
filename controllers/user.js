@@ -15,16 +15,20 @@ const addUser = async (req, res) => {
   });
 
   const token = user.generateJWT();
-  res.status(StatusCodes.CREATED).json({
-    user: {
-      name: name,
-      email: email,
-      password: password,
-      role: role,
-      image: user.image,
-    },
-    token,
-  });
+  if (user) {
+    res.status(StatusCodes.CREATED).json({
+      user: {
+        name: name,
+        email: email,
+        password: password,
+        role: role,
+        image: user.image,
+      },
+      token,
+    });
+  }else{
+    throw new BadRequestError("Unable to create new user. Try again later.")
+  }
 };
 
 const getAllUsers = async (req, res) => {
