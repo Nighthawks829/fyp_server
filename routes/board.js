@@ -5,6 +5,7 @@ const {
   getBoard,
   addBoard,
   updateBoard,
+  deleteBoard,
 } = require("../controllers/board");
 
 const authenticateUser = require("../middleware/authenticationUser");
@@ -17,6 +18,7 @@ router
 router
   .route("/:id")
   .get(authenticateUser, getBoard)
-  .patch(authenticateAdmin, updateBoard);
+  .patch(authenticateAdmin, updateBoard)
+  .delete(authenticateAdmin, deleteBoard);
 
 module.exports = router;

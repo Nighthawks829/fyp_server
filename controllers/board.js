@@ -93,9 +93,23 @@ const updateBoard = async (req, res) => {
   });
 };
 
+const deleteBoard = async (req, res) => {
+  const boarId = req.params.id;
+  const board = await Board.destroy({
+    where: {
+      id: boarId,
+    },
+  });
+  if (!board) {
+    throw new NotFoundError(`No board with id ${boarId}`);
+  }
+
+  res.status(StatusCodes.OK).json({ msg: `Success delete user ${boarId}` });
+};
 module.exports = {
   getAllBoards,
   getBoard,
   addBoard,
   updateBoard,
+  deleteBoard,
 };
