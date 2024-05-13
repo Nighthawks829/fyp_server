@@ -56,7 +56,7 @@ const getUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   const {
-    body: { name, email, password, role },
+    body: { name, email, password, role, image },
     params: { id: userId },
     user: { userId: ownId },
   } = req;
@@ -84,9 +84,6 @@ const updateUser = async (req, res) => {
 
   const respond = await user.save();
 
-  console.log(ownId);
-  console.log(userId);
-
   // Check if the own user profile changed.
   // Then update own user profile and generate new token
   if (
@@ -111,10 +108,12 @@ const updateUser = async (req, res) => {
 
     res.status(StatusCodes.OK).json({
       user: {
+        userId: userId,
         email: email,
         name: name,
         password: password,
         role: role,
+        image: image,
       },
       token: token,
     });
@@ -123,10 +122,12 @@ const updateUser = async (req, res) => {
   else {
     res.status(StatusCodes.OK).json({
       user: {
+        userId: userId,
         email: email,
         name: name,
         password: password,
         role: role,
+        image: image,
       },
     });
   }
