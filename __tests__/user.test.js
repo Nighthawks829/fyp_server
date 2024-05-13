@@ -2,6 +2,7 @@ const request = require("supertest");
 const app = require("../app");
 const { sequelize } = require("../models/Users"); // Import your sequelize instance
 const User = require("../models/Users");
+const jwt = require("jsonwebtoken");
 
 let token;
 // const testEmail = "nighthawks12345@gmail.com";
@@ -132,6 +133,35 @@ describe("User API", () => {
       .set("Authorization", `Bearer ${token}`);
   });
 
+  it("should throw an error if role is not admin when add user", async () => {
+    // New test user credentials
+    const newUser = {
+      name: "Test User",
+      email: "testAdduser@gmail.com",
+      password: "password",
+      role: "user",
+      image: "testimage.jpg",
+    };
+    const userToken = jwt.sign(
+      {
+        userId: testUserId,
+        name: testUserName,
+        email: testUserEmail,
+        role: testUserRole,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    const res = await request(app)
+      .post("/api/v1/user") // Use your actual addUser endpoint
+      .set("Authorization", `Bearer ${userToken}`) // Use the token obtained from a user role
+      .send(newUser);
+
+    expect(res.statusCode).toEqual(401);
+    expect(res.body).toHaveProperty("msg", "Authentication Invalid");
+  });
+
   it("should update own user profile and generate new token", async () => {
     const updatedAdmin = {
       name: "Updated Test Admin",
@@ -194,6 +224,36 @@ describe("User API", () => {
     expect(res.body).toHaveProperty("msg", "Please provide all values");
   });
 
+  it("should throw an error if role is not admin when update user", async () => {
+    // Update test user credentials
+    const updatedUser = {
+      name: "Updated Test User",
+      email: "updatedtestuser@gmail.com",
+      password: "updatedtestpassword",
+      role: "user",
+      image: "updatedtestimage.jpg",
+    };
+
+    const userToken = jwt.sign(
+      {
+        userId: testUserId,
+        name: testUserName,
+        email: testUserEmail,
+        role: testUserRole,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    const res = await request(app)
+      .patch(`/api/v1/user/${testUserId}`) // Use your actual addUser endpoint
+      .set("Authorization", `Bearer ${userToken}`) // Use the token obtained from a user role
+      .send(updatedUser);
+
+    expect(res.statusCode).toEqual(401);
+    expect(res.body).toHaveProperty("msg", "Authentication Invalid");
+  });
+
   it("should delete a user", async () => {
     const res = await request(app)
       .delete(`/api/v1/user/${testUserId}`)
@@ -219,5 +279,25 @@ describe("User API", () => {
       "msg",
       `No user with id ${nonExistentUserId}`
     );
+  });
+
+  it("should throw an error if role is not admin when delete user", async () => {
+    const userToken = jwt.sign(
+      {
+        userId: testUserId,
+        name: testUserName,
+        email: testUserEmail,
+        role: testUserRole,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    const res = await request(app)
+      .delete(`/api/v1/user/${testUserId}`) // Use your actual addUser endpoint
+      .set("Authorization", `Bearer ${userToken}`) // Use the token obtained from a user role
+
+    expect(res.statusCode).toEqual(401);
+    expect(res.body).toHaveProperty("msg", "Authentication Invalid");
   });
 });
