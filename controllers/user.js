@@ -18,6 +18,7 @@ const addUser = async (req, res) => {
   if (user) {
     res.status(StatusCodes.CREATED).json({
       user: {
+        userId: user.id,
         name: name,
         email: email,
         password: password,
@@ -26,8 +27,8 @@ const addUser = async (req, res) => {
       },
       token,
     });
-  }else{
-    throw new BadRequestError("Unable to create new user. Try again later.")
+  } else {
+    throw new BadRequestError("Unable to create new user. Try again later.");
   }
 };
 
