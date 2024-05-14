@@ -206,7 +206,7 @@ describe("Boards API", () => {
       name: "Update board",
       type: "Update type",
       location: "Update location",
-      ip_address: "3.3.3.3",
+      ip_address: "2.2.2.3",
       image: "Update image",
     };
 
@@ -231,7 +231,7 @@ describe("Boards API", () => {
       // name is missing
       type: "Update type",
       location: "Update location",
-      ip_address: "3.3.3.3",
+      ip_address: "2.2.2.3",
       image: "Update image",
     };
 
@@ -250,7 +250,7 @@ describe("Boards API", () => {
       name: "Update board",
       type: "Update type",
       location: "Update location",
-      ip_address: "3.3.3.3",
+      ip_address: "2.2.2.3",
       image: "Update image",
     };
 
@@ -304,7 +304,7 @@ describe("Boards API", () => {
     );
   });
 
-  it("should throw an error if role is not admin when delete board", async () => {
+  it("should throw an error if user role is not admin when delete board", async () => {
     const userToken = jwt.sign(
       {
         userId: testUserId,

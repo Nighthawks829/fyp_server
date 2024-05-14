@@ -22,6 +22,7 @@ const errorHandlerMiddleware = require("./middleware/error-handler");
 const authRouter = require("./routes/auth");
 const userRouter = require("./routes/user");
 const boardRouter = require("./routes/board");
+const sensorRouter = require("./routes/sensor");
 
 app.use(express.json());
 app.use(helmet());
@@ -38,6 +39,7 @@ app.get("/", (req, res) => {
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/board", boardRouter);
+app.use("/api/v1/sensor", sensorRouter);
 
 // middleware
 app.use(notFoundMiddleware);

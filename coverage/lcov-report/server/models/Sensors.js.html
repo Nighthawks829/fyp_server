@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for server/models/Boards.js</title>
+    <title>Code coverage report for server/models/Sensors.js</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../prettify.css" />
     <link rel="stylesheet" href="../../base.css" />
@@ -19,13 +19,13 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../index.html">All files</a> / <a href="index.html">server/models</a> Boards.js</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">server/models</a> Sensors.js</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">90% </span>
+                <span class="strong">88.88% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>9/10</span>
+                <span class='fraction'>8/9</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">66.66% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/3</span>
+                <span class='fraction'>1/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">90% </span>
+                <span class="strong">88.88% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>9/10</span>
+                <span class='fraction'>8/9</span>
             </div>
         
             
@@ -155,15 +155,7 @@
 <a name='L90'></a><a href='#L90'>90</a>
 <a name='L91'></a><a href='#L91'>91</a>
 <a name='L92'></a><a href='#L92'>92</a>
-<a name='L93'></a><a href='#L93'>93</a>
-<a name='L94'></a><a href='#L94'>94</a>
-<a name='L95'></a><a href='#L95'>95</a>
-<a name='L96'></a><a href='#L96'>96</a>
-<a name='L97'></a><a href='#L97'>97</a>
-<a name='L98'></a><a href='#L98'>98</a>
-<a name='L99'></a><a href='#L99'>99</a>
-<a name='L100'></a><a href='#L100'>100</a>
-<a name='L101'></a><a href='#L101'>101</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">4x</span>
+<a name='L93'></a><a href='#L93'>93</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
@@ -238,14 +230,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -266,10 +250,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">const { DataTypes, Sequelize } = require("sequelize");
 const sequelize = require("../db/connect");
 &nbsp;
-const UserSchema = require("./Users");
+const BoardSchame = require("./Boards");
 &nbsp;
-const BoardSchema = sequelize.define(
-  "Boards",
+const SensorSchema = sequelize.define(
+  "Sensors",
   {
     id: {
       type: DataTypes.UUID,
@@ -277,7 +261,7 @@ const BoardSchema = sequelize.define(
       primaryKey: true,
       allowNull: false,
     },
-    userId: {
+    boardId: {
       type: DataTypes.UUID,
       allowNull: false,
     },
@@ -287,40 +271,37 @@ const BoardSchema = sequelize.define(
       validate: {
         len: {
           args: [2, 50],
-          msg: "Board name should be between 2 and 50 characters",
+          msg: "Sensor name should be between 2 and 50 characters",
+        },
+      },
+    },
+    pin: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        isNumeric: {
+          args: true,
+          msg: "Please provide a valid pin number",
         },
       },
     },
     type: {
-      type: DataTypes.STRING,
+      type: DataTypes.ENUM,
+      values: [
+        "Digital Input",
+        "Digital Output",
+        "Analog Input",
+        "Analog Output",
+      ],
       allowNull: false,
-      validate: {
-        len: {
-          args: [2, 50],
-          msg: "Board type should be between 2 and 50 characters",
-        },
-      },
     },
-    location: {
+    topic: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
         len: {
           args: [2, 100],
-          msg: "Board location should be between 2 and 100 characters",
-        },
-      },
-    },
-    ip_address: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-      validate: {
-        is: {
-          args: [
-            "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
-          ],
-          msg: "Please provide a valid IP address",
+          msg: "Topic length should be between 2 and 100 characters",
         },
       },
     },
@@ -343,26 +324,21 @@ const BoardSchema = sequelize.define(
   {
     timestamps: false,
     freezeTableName: true,
-    hooks: {
-      beforeUpdate: async (board) =&gt; {
-        board.updatedAt = new Date();
-      },
-    },
   }
 );
 &nbsp;
-BoardSchema.belongsTo(UserSchema, { foreignKey: "userId" });
+SensorSchema.belongsTo(BoardSchame, { foreignKey: "boardId" });
 &nbsp;
 sequelize
   .sync()
   .then(() =&gt; {
-    console.log("Boards table created successfully");
+    console.log("Sensors table created successfully");
   })
   .catch(<span class="fstat-no" title="function not covered" >(e</span>rror) =&gt; {
-<span class="cstat-no" title="statement not covered" >    console.log("Unable to create Boards table: ", error);</span>
+<span class="cstat-no" title="statement not covered" >    console.log("Unable to created Sensors table: ", error);</span>
   });
 &nbsp;
-module.exports = BoardSchema;
+module.exports = SensorSchema;
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
