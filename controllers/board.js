@@ -13,13 +13,15 @@ const getBoard = async (req, res) => {
 
   if (board) {
     res.status(StatusCodes.OK).json({
-      boardId: board.id,
-      name: board.name,
-      type: board.type,
-      location: board.location,
-      ip_address: board.ip_address,
-      image: board.image,
-      userId: board.userId,
+      board: {
+        boardId: board.id,
+        name: board.name,
+        type: board.type,
+        location: board.location,
+        ip_address: board.ip_address,
+        image: board.image,
+        userId: board.userId,
+      },
     });
   } else {
     throw new NotFoundError(`No board with id ${req.params.id}`);
@@ -40,12 +42,15 @@ const addBoard = async (req, res) => {
 
   if (board) {
     res.status(StatusCodes.CREATED).json({
-      name: name,
-      type: type,
-      location: location,
-      ip_address: ip_address,
-      image: image,
-      userId: userId,
+      board: {
+        boardId: board.id,
+        name: name,
+        type: type,
+        location: location,
+        ip_address: ip_address,
+        image: image,
+        userId: userId,
+      },
     });
   } else {
     throw new BadRequestError("Unable to create new board. Try again later.");
@@ -83,6 +88,7 @@ const updateBoard = async (req, res) => {
 
   res.status(StatusCodes.OK).json({
     board: {
+      boardId: boardId,
       name: board.name,
       type: board.type,
       location: board.location,
@@ -104,7 +110,7 @@ const deleteBoard = async (req, res) => {
     throw new NotFoundError(`No board with id ${boarId}`);
   }
 
-  res.status(StatusCodes.OK).json({ msg: `Success delete user ${boarId}` });
+  res.status(StatusCodes.OK).json({ msg: `Success delete board ${boarId}` });
 };
 module.exports = {
   getAllBoards,

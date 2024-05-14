@@ -3,7 +3,7 @@ const sequelize = require("../db/connect");
 
 const UserSchema = require("./Users");
 
-const BoardSchame = sequelize.define(
+const BoardSchema = sequelize.define(
   "Boards",
   {
     id: {
@@ -86,7 +86,7 @@ const BoardSchame = sequelize.define(
   }
 );
 
-BoardSchame.belongsTo(UserSchema, { foreignKey: "userId" });
+BoardSchema.belongsTo(UserSchema, { foreignKey: "userId" });
 
 sequelize
   .sync()
@@ -97,4 +97,4 @@ sequelize
     console.log("Unable to create Boards table: ", error);
   });
 
-module.exports = BoardSchame;
+module.exports = BoardSchema;

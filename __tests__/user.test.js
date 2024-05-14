@@ -3,20 +3,21 @@ const app = require("../app");
 const { sequelize } = require("../models/Users"); // Import your sequelize instance
 const User = require("../models/Users");
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 let token;
 // const testEmail = "nighthawks12345@gmail.com";
 // const testPassword = "12345";
 // const testUserId = "666c9246-3d29-4d9f-b0dc-d141a781cb83";
 
-const testAdminId = "testAdminId";
+const testAdminId = "testUserAdminId";
 const testAdminName = "Test Admin";
-const testAdminEmail = "testAdmin@gmail.com";
+const testAdminEmail = "testUserAdmin@gmail.com";
 const testAdminPassword = "password";
 const testAdminImage = "adminImage";
 const testAdminRole = "admin";
 
-const testUserId = "testUserId";
+const testUserId = "testUserUserId";
 const testUserName = "Test User";
 const testUserEmail = "testUser@gmail.com";
 const testUserPassword = "password";
@@ -70,8 +71,8 @@ afterAll(async () => {
 describe("User API", () => {
   it("should get all users", async () => {
     const res = await request(app)
-      .get("/api/v1/user") // Use your actual getAllUsers endpoint
-      .set("Authorization", `Bearer ${token}`); // Use the token obtained from login test
+      .get("/api/v1/user") 
+      .set("Authorization", `Bearer ${token}`);
     expect(res.statusCode).toEqual(200);
     expect(res.body).toHaveProperty("users");
     expect(res.body).toHaveProperty("count");
@@ -116,8 +117,8 @@ describe("User API", () => {
     };
 
     const res = await request(app)
-      .post("/api/v1/user") // Use your actual addUser endpoint
-      .set("Authorization", `Bearer ${token}`) // Use the token obtained from login test
+      .post("/api/v1/user") 
+      .set("Authorization", `Bearer ${token}`) 
       .send(newUser);
 
     expect(res.statusCode).toEqual(201);
@@ -154,8 +155,8 @@ describe("User API", () => {
     );
 
     const res = await request(app)
-      .post("/api/v1/user") // Use your actual addUser endpoint
-      .set("Authorization", `Bearer ${userToken}`) // Use the token obtained from a user role
+      .post("/api/v1/user") 
+      .set("Authorization", `Bearer ${userToken}`) 
       .send(newUser);
 
     expect(res.statusCode).toEqual(401);

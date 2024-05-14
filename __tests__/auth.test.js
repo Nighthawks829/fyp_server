@@ -87,7 +87,7 @@ describe("Auth API", () => {
     expect(res.statusCode).toEqual(401);
     expect(res.body).toHaveProperty("msg", "Invalid Password");
   });
-
+  
   it("should reject invalid email address", async () => {
     const res = await request(app)
       .post("/api/v1/auth/login") // Use your actual login endpoint
