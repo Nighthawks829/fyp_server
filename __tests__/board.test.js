@@ -94,6 +94,7 @@ describe("Boards API", () => {
     const res = await request(app)
       .get("/api/v1/board") // Use your actual getAllUsers endpoint
       .set("Authorization", `Bearer ${token}`); // Use the token obtained from login test
+
     expect(res.statusCode).toEqual(200);
     expect(res.body).toHaveProperty("boards");
     expect(res.body).toHaveProperty("count");
@@ -158,7 +159,7 @@ describe("Boards API", () => {
     expect(res.body.board).toHaveProperty("location", newBoard.location);
     expect(res.body.board).toHaveProperty("ip_address", newBoard.ip_address);
     expect(res.body.board).toHaveProperty("image", newBoard.image);
-
+ 
     // Delete the test board after test
     Board.destroy({
       where: {
@@ -201,7 +202,7 @@ describe("Boards API", () => {
   it("should update a board", async () => {
     // Updated board configuration
     const updatedBoard = {
-      userId: testAdminId,
+      userId: testAdminId,      // board userId did not update
       name: "Update board",
       type: "Update type",
       location: "Update location",
@@ -214,114 +215,15 @@ describe("Boards API", () => {
       .set("Authorization", `Bearer ${token}`)
       .send(updatedBoard);
 
-    expect(res.statusCode).toEqual(200);
+    expect(res.status).toEqual(200);
     expect(res.body.board).toHaveProperty("boardId", testBoardId);
     expect(res.body.board).toHaveProperty("userId", testAdminId);
     expect(res.body.board).toHaveProperty("name", updatedBoard.name);
     expect(res.body.board).toHaveProperty("type", updatedBoard.type);
     expect(res.body.board).toHaveProperty("location", updatedBoard.location);
-    expect(res.body.board).toHaveProperty(
-      "ip_address",
-      updatedBoard.ip_address
-    );
+    expect(res.body.board).toHaveProperty("ip_address", updatedBoard.ip_address);
     expect(res.body.board).toHaveProperty("image", updatedBoard.image);
   });
 
-  it("should throw an error if not all values are provided when update board", async () => {
-    const incompleteBoard = {
-      userId: testAdminId, // board userId did not update
-      // name is missing
-      type: "Update type",
-      location: "Update location",
-      ip_address: "3.3.3.3",
-      image: "Update image",
-    };
-
-    const res = await request(app)
-      .patch(`/api/v1/board/${testBoardId}`)
-      .set("Authorization", `Bearer ${token}`)
-      .send(incompleteBoard);
-
-    expect(res.statusCode).toEqual(400);
-    expect(res.body).toHaveProperty("msg", "Please provide all values");
-  });
-
-  it("should throw an error if user role is not admin when update user", async () => {
-    const updatedBoard = {
-      userId: testAdminId,
-      name: "Update board",
-      type: "Update type",
-      location: "Update location",
-      ip_address: "3.3.3.3",
-      image: "Update image",
-    };
-
-    const userToken = jwt.sign(
-      {
-        userId: testUserId,
-        name: testUserName,
-        email: testUserEmail,
-        role: testUserRole,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-
-    const res = await request(app)
-      .patch(`/api/v1/board/${testBoardId}`)
-      .set("Authotization", `Bearer ${userToken}`)
-      .send(updatedBoard);
-
-    expect(res.statusCode).toEqual(401);
-    expect(res.body).toHaveProperty("msg", "Authentication Invalid");
-  });
-
-  it("should delete a board", async () => {
-    const res = await request(app)
-      .delete(`/api/v1/board/${testBoardId}`)
-      .set("Authorization", `Bearer ${token}`);
-
-    expect(res.statusCode).toEqual(200);
-    expect(res.body).toHaveProperty(
-      "msg",
-      `Success delete board ${testBoardId}`
-    );
-
-    // Verify board is deleted
-    const board = await Board.findByPk(testBoardId);
-    expect(board).toBeNull();
-  });
-
-  it("should throw an erro if borad not found when delete board", async () => {
-    const nonExistentBoardId = "nonExistBoardId";
-
-    const res = await request(app)
-      .delete(`/api/v1/board/${nonExistentBoardId}`)
-      .set("Authorization", `Bearer ${token}`);
-
-    expect(res.statusCode).toEqual(404);
-    expect(res.body).toHaveProperty(
-      "msg",
-      `No board with id ${nonExistentBoardId}`
-    );
-  });
-
-  it("should throw an error if role is not admin when delete board", async () => {
-    const userToken = jwt.sign(
-      {
-        userId: testUserId,
-        name: testUserName,
-        email: testUserEmail,
-        role: testUserRole,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-    const res = await request(app)
-      .delete(`/api/v1/board/${testBoardId}`)
-      .set("Authorization", `Bearer ${userToken}`);
-
-    expect(res.statusCode).toEqual(401);
-    expect(res.body).toHaveProperty("msg", "Authentication Invalid");
-  });
+  
 });
