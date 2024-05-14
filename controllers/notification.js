@@ -1,0 +1,158 @@
+const Notification = require("../models/Notifications");
+const { StatusCodes } = require("http-status-codes");
+const { NotFoundError, BadRequestError } = require("../errors");
+
+const getAllNotifications = async (req, res) => {
+  const notifications = await Notification.findAll();
+
+  res
+    .status(StatusCodes.OK)
+    .json({ notifications, count: notifications.length });
+};
+
+const getNotification = async (req, res) => {
+  const notification = await Notification.findByPk(req.params.id);
+
+  if (notification) {
+    res.status(StatusCodes.OK).json({
+      notification: {
+        notificationId: notification.id,
+        userId: notification.userId,
+        sensorId: notification.sensorId,
+        name: notification.name,
+        threshold: notification.threshold,
+        condition: notification.condition,
+        message: notification.message,
+        platform: notification.platform,
+        address: notification.address,
+      },
+    });
+  } else {
+    throw new NotFoundError(`No notification with id ${req.params.id}`);
+  }
+};
+
+const addNotification = async (req, res) => {
+  const {
+    userId,
+    sensorId,
+    name,
+    threshold,
+    condition,
+    message,
+    platform,
+    address,
+  } = req.body;
+
+  const notification = await Notification.create({
+    userId: userId,
+    sensorId: sensorId,
+    name: name,
+    threshold: threshold,
+    condition: condition,
+    message: message,
+    platform: platform,
+    address: address,
+  });
+
+  if (notification) {
+    res.status(StatusCodes.CREATED).json({
+      notification: {
+        notificationId: notification.id,
+        userId: notification.userId,
+        sensorId: notification.sensorId,
+        name: notification.name,
+        threshold: notification.threshold,
+        condition: notification.condition,
+        message: notification.message,
+        platform: notification.platform,
+        address: notification.address,
+      },
+    });
+  } else {
+    throw new BadRequestError(
+      "Unable to create new notification. Try again later"
+    );
+  }
+};
+
+const updateNotification = async (req, res) => {
+  const {
+    body: {
+      userId,
+      sensorId,
+      name,
+      threshold,
+      condition,
+      message,
+      platform,
+      address,
+    },
+    params: { id: notificationId },
+  } = req;
+
+  if (
+    !userId ||
+    !sensorId ||
+    !name ||
+    !threshold ||
+    !condition ||
+    !message ||
+    !platform ||
+    !address
+  ) {
+    throw new BadRequestError("Please provide all values");
+  }
+
+  const notification = await Notification.findByPk(notificationId);
+
+  notification.userId = userId;
+  notification.sensorId = sensorId;
+  notification.name = name;
+  notification.threshold = threshold;
+  notification.condition = condition;
+  notification.message = message;
+  notification.platform = platform;
+  notification.address = address;
+
+  await notification.save();
+
+  res.status(StatusCodes.OK).json({
+    notification: {
+      notificationId: notificationId,
+      userId: notification.userId,
+      sensorId: notification.sensorId,
+      name: notification.name,
+      threshold: notification.threshold,
+      condition: notification.condition,
+      message: notification.message,
+      platform: notification.platform,
+      address: notification.address,
+    },
+  });
+};
+
+const deleteNotification = async (req, res) => {
+  const notificationId = req.params.id;
+  const notification = await Notification.destroy({
+    where: {
+      id: notificationId,
+    },
+  });
+
+  if (!notification) {
+    throw new NotFoundError(`No notification with id ${notificationId}`);
+  }
+
+  res
+    .status(StatusCodes.OK)
+    .json({ msg: `Success delete notification ${notificationId}` });
+};
+
+module.exports = {
+  getAllNotifications,
+  getNotification,
+  addNotification,
+  updateNotification,
+  deleteNotification
+};

@@ -59,8 +59,10 @@ const NotificationSchema = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: false,
       validate: {
-        args: [2, 5000],
-        msg: "Address should be between 2 and 5000 characters",
+        len: {
+          args: [2, 5000],
+          msg: "Address should be between 2 and 5000 characters",
+        },
       },
     },
     createdAt: {
