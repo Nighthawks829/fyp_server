@@ -10,17 +10,16 @@ const {
 } = require("../controllers/notification");
 
 const authenticateUser = require("../middleware/authenticationUser");
-const authenticateAdmin = require("../middleware/authenticationAdmin");
 
 router
   .route("/")
   .get(authenticateUser, getAllNotifications)
-  .post(authenticateAdmin, addNotification);
+  .post(authenticateUser, addNotification);
 
 router
   .route("/:id")
   .get(authenticateUser, getNotification)
-  .patch(authenticateAdmin, updateNotification)
-  .delete(authenticateAdmin, deleteNotification);
+  .patch(authenticateUser, updateNotification)
+  .delete(authenticateUser, deleteNotification);
 
 module.exports = router;

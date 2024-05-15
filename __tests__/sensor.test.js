@@ -245,7 +245,7 @@ describe("Sensor APi", () => {
       .set("Authorization", `Bearer ${token}`)
       .send(updatedSensor);
 
-    expect(res.status).toEqual(200);
+    expect(res.statusCode).toEqual(200);
     expect(res.body).toHaveProperty("sensor");
     expect(res.body.sensor).toHaveProperty("sensorId", testSensorId);
     expect(res.body.sensor).toHaveProperty("boardId", testBoardId);
@@ -316,6 +316,10 @@ describe("Sensor APi", () => {
       "msg",
       `Success delete sensor ${testSensorId}`
     );
+
+    // Verify sensor is deleted
+    const sensor = await Sensor.findByPk(testSensorId);
+    expect(sensor).toBeNull();
   });
 
   it("should throw an error if sensor not found when delete sensor", async () => {
@@ -332,7 +336,7 @@ describe("Sensor APi", () => {
     );
   });
 
-  it("should throw an erro if user role is not admin when delete sensor", async () => {
+  it("should throw an error if user role is not admin when delete sensor", async () => {
     const userToken = jwt.sign(
       {
         userId: testUserId,

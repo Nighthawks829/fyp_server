@@ -1,6 +1,6 @@
 const Notification = require("../models/Notifications");
 const { StatusCodes } = require("http-status-codes");
-const { NotFoundError, BadRequestError } = require("../errors");
+const { NotFoundError, BadRequestError, ForbiddenError } = require("../errors");
 
 const getAllNotifications = async (req, res) => {
   const notifications = await Notification.findAll();
@@ -104,6 +104,10 @@ const updateNotification = async (req, res) => {
     throw new BadRequestError("Please provide all values");
   }
 
+  if (req.user.userId !== userId) {
+    throw new ForbiddenError("No allow to update other user notification");
+  }
+
   const notification = await Notification.findByPk(notificationId);
 
   notification.userId = userId;
@@ -134,6 +138,12 @@ const updateNotification = async (req, res) => {
 
 const deleteNotification = async (req, res) => {
   const notificationId = req.params.id;
+
+  const notificationUserId = await Notification.findByPk(notificationId);
+  if (notificationUserId.userId !== req.user.userId) {
+    throw new ForbiddenError("No allow to delete other user notification");
+  }
+
   const notification = await Notification.destroy({
     where: {
       id: notificationId,
@@ -154,5 +164,5 @@ module.exports = {
   getNotification,
   addNotification,
   updateNotification,
-  deleteNotification
+  deleteNotification,
 };

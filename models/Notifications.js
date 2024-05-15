@@ -79,6 +79,11 @@ const NotificationSchema = sequelize.define(
   {
     timestamps: false,
     freezeTableName: true,
+    hooks: {
+      beforeUpdate: async (notification) => {
+        notification.updatedAt = new Date();
+      },
+    },
   }
 );
 

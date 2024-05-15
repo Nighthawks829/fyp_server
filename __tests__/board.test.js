@@ -290,7 +290,7 @@ describe("Boards API", () => {
     expect(board).toBeNull();
   });
 
-  it("should throw an erro if borad not found when delete board", async () => {
+  it("should throw an error if borad not found when delete board", async () => {
     const nonExistentBoardId = "nonExistBoardId";
 
     const res = await request(app)

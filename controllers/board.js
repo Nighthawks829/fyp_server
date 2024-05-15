@@ -101,6 +101,7 @@ const updateBoard = async (req, res) => {
 
 const deleteBoard = async (req, res) => {
   const boarId = req.params.id;
+
   const board = await Board.destroy({
     where: {
       id: boarId,

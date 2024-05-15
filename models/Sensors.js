@@ -75,6 +75,11 @@ const SensorSchema = sequelize.define(
   {
     timestamps: false,
     freezeTableName: true,
+    hooks: {
+      beforeUpdate: async (sensor) => {
+        sensor.updatedAt = new Date();
+      },
+    },
   }
 );
 
