@@ -7,7 +7,12 @@ const {
   addSensorControl,
 } = require("../controllers/sensorControl");
 
-router.route("/").get(getAllSensorControls).post(addSensorControl);
+const authenticateAdmin = require("../middleware/authenticationAdmin");
+
+router
+  .route("/")
+  .get(getAllSensorControls)
+  .post(authenticateAdmin, addSensorControl);
 router.route("/:id").get(getSensorControl);
 
 module.exports = router;
