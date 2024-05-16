@@ -63,7 +63,14 @@ const updateDashboard = async (req, res) => {
     params: { id: dashboardId },
   } = req;
 
-  if (!userId || !sensorId || !name || !control || !type) {
+  if (
+    !userId ||
+    !sensorId ||
+    !name ||
+    control === null ||
+    control === undefined ||
+    !type
+  ) {
     throw new BadRequestError("Please provide all values");
   }
 
@@ -95,10 +102,15 @@ const updateDashboard = async (req, res) => {
 
 const deleteDashboard = async (req, res) => {
   const dashboardId = req.params.id;
-
+  console.log("Inside the delete API" + req.params.id);
   const dashboardUserId = await Dashboard.findByPk(dashboardId);
+
+  if (!dashboardUserId) {
+    throw new NotFoundError(`No dashboard with id ${dashboardId}`);
+  }
+
   if (dashboardUserId.userId !== req.user.userId) {
-    throw new ForbiddenError("No allow to delete oother user dashboard");
+    throw new ForbiddenError("No allow to delete other user dashboard");
   }
 
   const dashboard = await Dashboard.destroy({
@@ -121,5 +133,5 @@ module.exports = {
   getDashboard,
   addDashboard,
   updateDashboard,
-  deleteDashboard
+  deleteDashboard,
 };

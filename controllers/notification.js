@@ -140,6 +140,11 @@ const deleteNotification = async (req, res) => {
   const notificationId = req.params.id;
 
   const notificationUserId = await Notification.findByPk(notificationId);
+
+  if (!notificationUserId) {
+    throw new NotFoundError(`No notification with id ${notificationId}`);
+  }
+  
   if (notificationUserId.userId !== req.user.userId) {
     throw new ForbiddenError("No allow to delete other user notification");
   }

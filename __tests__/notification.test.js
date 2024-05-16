@@ -7,7 +7,6 @@ const User = require("../models/Users");
 const Notification = require("../models/Notifications");
 
 const jwt = require("jsonwebtoken");
-const { EXPECTATION_FAILED } = require("http-status-codes");
 require("dotenv").config();
 
 const testAdminId = "testNotificationAdminId";
@@ -24,7 +23,7 @@ const testUserPassword = "password";
 const testUserImage = "userImage";
 const testUserRole = "user";
 
-const testBoardId = "testSensorBoardId";
+const testBoardId = "testNotificationBoardId";
 const testBoardName = "testBoardName";
 const testBoardType = "testBoardType";
 const testBoardLocation = "testBoardLocation";
@@ -264,7 +263,7 @@ describe("Notification API", () => {
       newNotification.address
     );
 
-    Notification.destroy({
+    await Notification.destroy({
       where: {
         id: res.body.notification.notificationId,
       },
@@ -350,6 +349,28 @@ describe("Notification API", () => {
     expect(res.body).toHaveProperty("msg", "Please provide all values");
   });
 
+  it("should throw an error when user delete other user notification", async () => {
+    const userToken = jwt.sign(
+      {
+        userId: testUserId,
+        name: testUserName,
+        email: testUserEmail,
+        role: testUserRole,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    const res = await request(app)
+      .delete(`/api/v1/notification/${testNotificationId}`)
+      .set("Authorization", `Bearer ${userToken}`);
+    expect(res.statusCode).toEqual(403);
+    expect(res.body).toHaveProperty(
+      "msg",
+      "No allow to delete other user notification"
+    );
+  });
+
   it("should delete a notification", async () => {
     const res = await request(app)
       .delete(`/api/v1/notification/${testNotificationId}`)
@@ -362,7 +383,7 @@ describe("Notification API", () => {
     );
 
     // Verify notification is deleted
-    const notification = await Notification.findByPk(testSensorId);
+    const notification = await Notification.findByPk(testNotificationId);
     expect(notification).toBeNull();
   });
 
@@ -413,28 +434,6 @@ describe("Notification API", () => {
     expect(res.body).toHaveProperty(
       "msg",
       "No allow to update other user notification"
-    );
-  });
-
-  it("should throw an error user delete other user notification", async () => {
-    const userToken = jwt.sign(
-      {
-        userId: testUserId,
-        name: testUserName,
-        email: testUserEmail,
-        role: testUserRole,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-
-    const res = await request(app)
-      .delete(`/api/v1/notification/${testNotificationId}`)
-      .set("Authorization", `Bearer ${userToken}`);
-    expect(res.statusCode).toEqual(403);
-    expect(res.body).toHaveProperty(
-      "msg",
-      "No allow to delete other user notification"
     );
   });
 });
