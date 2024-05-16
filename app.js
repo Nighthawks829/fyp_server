@@ -26,6 +26,7 @@ const sensorRouter = require("./routes/sensor");
 const notificationRouter = require("./routes/notification");
 const dashboardRouter = require("./routes/dashboard");
 const sensorDataRouter = require("./routes/sensorData");
+const sensorControlRouter = require("./routes/sensorControl");
 
 app.use(express.json());
 app.use(helmet());
@@ -46,6 +47,7 @@ app.use("/api/v1/sensor", sensorRouter);
 app.use("/api/v1/notification", notificationRouter);
 app.use("/api/v1/dashboard", dashboardRouter);
 app.use("/api/v1/sensorData", sensorDataRouter);
+app.use("/api/v1/sensorControl", sensorControlRouter);
 
 // middleware
 app.use(notFoundMiddleware);
