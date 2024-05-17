@@ -12,6 +12,9 @@ const app = express();
 
 const sequelize = require("./db/connect");
 
+// mqtt server
+const mqtt = require("./mqtt/connect");
+
 // import middleware
 const authenticateUser = require("./middleware/authenticationUser");
 const authenticateAdmin = require("./middleware/authenticationAdmin");
