@@ -1,4 +1,5 @@
 const SensorData = require("../models/SensorData");
+const Sensor = require("../models/Sensors");
 const { StatusCodes } = require("http-status-codes");
 const { BadRequestError, NotFoundError } = require("../errors");
 
@@ -27,10 +28,16 @@ const getSensorData = async (req, res) => {
 };
 
 const addSensorData = async (req, res) => {
-  const { sensorId, data, unit } = req.body;
+  const { topic, data, unit } = req.body;
+
+  const sensor = await Sensor.findOne({
+    where: {
+      topic: topic,
+    },
+  });
 
   const sensorData = await SensorData.create({
-    sensorId: sensorId,
+    sensorId: sensor.id,
     data: data,
     unit: unit,
   });

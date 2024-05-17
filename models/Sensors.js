@@ -48,6 +48,7 @@ const SensorSchema = sequelize.define(
     },
     topic: {
       type: DataTypes.STRING,
+      unique: true,
       allowNull: false,
       validate: {
         len: {

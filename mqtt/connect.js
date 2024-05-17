@@ -12,7 +12,7 @@ const clientId = process.env.MQTT_ClientID;
 
 const connectUrl = `${protocol}://${host}:${port}`;
 
-const username = process.env.MQTT_NAME;
+const username = process.env.MQTT_USERNAME;
 const password = process.env.MQTT_PASSWORD;
 
 let client = mqtt.connect(connectUrl, {
@@ -33,7 +33,7 @@ client.on("close", mqtt_close);
 const topic = "#"; // subscribe to all topics
 
 function mqtt_connect() {
-  console.log("Connecting MQTT Broker at ", host);
+  console.log("Connecting MQTT Broker at", host);
   client.subscribe(topic, mqtt_subscribe);
 }
 
@@ -65,17 +65,25 @@ function mqtt_close() {
 
 // receive a message from MQTT broker
 function mqtt_messageReceived(topic, payload) {
-  console.log("Received Message: ", topic, payload.toString());
-  insert_message(topic, payload);
+  // console.log("Received Message: ", topic, payload.toString());
+
+  // Parse the payload string into a JavaScript object
+  let data = JSON.parse(payload.toString());
+
+  // Print the unit and value
+  // console.log("Unit:", data.unit);
+  // console.log("Value:", data.value);
+
+    insert_message(topic, data);
 }
 
-async function insert_message(topic, payload) {
+async function insert_message(topic, data) {
   console.log("MQTT Insert Data");
   try {
-    let value = payload.toString();
-    const response = await axios.post("/api/v1/SensorData/", {
+    const response = await axios.post("http://192.168.0.110:3001/api/v1/SensorData/", {
       topic: topic,
-      value: value,
+      unit: data.unit,
+      data: data.value,
     });
   } catch (error) {
     console.log("Failed to insert data");
