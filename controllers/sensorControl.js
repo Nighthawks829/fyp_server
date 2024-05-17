@@ -1,4 +1,6 @@
 const SensorControl = require("../models/SensorControls");
+const Sensor = require("../models/Sensors");
+const mqtt = require("../mqtt/connect");
 const { StatusCodes } = require("http-status-codes");
 const { NotFoundError, BadRequestError } = require("../errors");
 
@@ -30,13 +32,18 @@ const getSensorControl = async (req, res) => {
 };
 
 const addSensorControl = async (req, res) => {
-  const { userId, sensorId, value } = req.body;
+  const { userId, sensorId, value, topic } = req.body;
 
   const sensorControl = await SensorControl.create({
     userId: userId,
     sensorId: sensorId,
     value: value,
   });
+
+  // const sensor = await Sensor.findByPk(sensorId);
+  // const topic = sensor.topic;
+
+  mqtt.publish(topic, value);
 
   if (sensorControl) {
     res.status(StatusCodes.CREATED).json({

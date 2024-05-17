@@ -78,7 +78,6 @@ function mqtt_messageReceived(topic, payload) {
 }
 
 async function insert_message(topic, data) {
-  console.log("MQTT Insert Data");
   try {
     const response = await axios.post("http://192.168.0.110:3001/api/v1/SensorData/", {
       topic: topic,
