@@ -8,7 +8,8 @@ require("dotenv").config();
 const protocol = process.env.MQTT_PROTOCOL;
 const host = process.env.MQTT_HOST;
 const port = process.env.MQTT_PORT;
-const clientId = process.env.MQTT_ClientID;
+// const clientId = process.env.MQTT_ClientID;
+const clientId = `backend_${Math.random().toString(16).slice(3)}`;
 
 const connectUrl = `${protocol}://${host}:${port}`;
 
@@ -45,6 +46,7 @@ function mqtt_subscribe(err, granted) {
 }
 
 function mqtt_reconnect(err) {
+  console.log("Reconnecting to MQTT Broker...");
   client = mqtt.connect(connectUrl, {
     clientId: clientId,
     clean: true,
