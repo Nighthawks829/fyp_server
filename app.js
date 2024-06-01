@@ -31,11 +31,30 @@ const dashboardRouter = require("./routes/dashboard");
 const sensorDataRouter = require("./routes/sensorData");
 const sensorControlRouter = require("./routes/sensorControl");
 
+// Middleware setup
 app.use(express.json());
-app.use(helmet());
-app.use(cors());
-app.use(xss());
+app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser());
+
+// Security middleware
+app.use(helmet());
+app.use(xss());
+
+// Rate limiting middleware
+app.use(
+  rateLimiter({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+  })
+);
+
+// CORS configuration
+app.use(
+  cors({
+    origin: "http://192.168.0.110:3000", // Replace with your React app's origin
+    credentials: true, // Allow credentials (cookies) to be sent and received
+  })
+);
 
 // Test API
 app.get("/", (req, res) => {

@@ -25,13 +25,30 @@ const login = async (req, res) => {
   }
 
   const token = user.generateJWT();
-
-  res.cookie("jwt", token, {
-    httpOnly: true,
+  
+  res.cookie("token", token, {
+    // httpOnly: true,
+    httpOnly: false,
     secure: false, // Use secure cookies in production
     sameSite: "strict",
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   });
+
+  res.cookie(
+    "user",
+    JSON.stringify({
+      userId: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    }),
+    {
+      httpOnly: false,
+      secure: false, // Use secure cookies in production
+      sameSite: "strict",
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    }
+  );
 
   res.status(StatusCodes.OK).json({
     user: {
@@ -45,10 +62,8 @@ const login = async (req, res) => {
 };
 
 const logout = (req, res) => {
-  res.cookie("jwt", "", {
-    httpOnly: true,
-    expires: new Date(0),
-  });
+  res.clearCookie("user");
+  res.clearCookie("token");
 
   res.status(StatusCodes.OK).json({ message: "Logged out successfully" });
 };
