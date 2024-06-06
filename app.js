@@ -6,6 +6,7 @@ const cors = require("cors");
 const xss = require("xss-clean");
 const rateLimiter = require("express-rate-limit");
 const cookieParser = require("cookie-parser");
+const fileUpload = require("express-fileupload");
 
 const express = require("express");
 const app = express();
@@ -33,8 +34,9 @@ const sensorControlRouter = require("./routes/sensorControl");
 
 // Middleware setup
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }))
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(fileUpload());
 
 // Security middleware
 app.use(helmet());

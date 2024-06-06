@@ -4,7 +4,21 @@ const { BadRequestError, NotFoundError } = require("../errors");
 const bcrypt = require("bcrypt");
 
 const addUser = async (req, res) => {
-  const { name, email, password, role, image } = req.body;
+  const { name, email, password, role } = req.body;
+  let image = "";
+
+  if (req.files !== null) {
+    const file = req.files.image;
+    image = file.name;
+    file.mv(`${__dirname}/../../client/public/uploads/${file.name}`, (error) => {
+      if (error) {
+        console.error(error);
+        return res
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: error });
+      }
+    });
+  }
 
   const user = await User.create({
     name: name,
@@ -43,11 +57,13 @@ const getUser = async (req, res) => {
 
   if (user) {
     res.status(StatusCodes.OK).json({
-      userId: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      image: user.image,
+      user: {
+        userId: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        image: user.image,
+      },
     });
   } else {
     throw new NotFoundError(`No user with id ${req.params.id}`);
@@ -75,7 +91,7 @@ const updateUser = async (req, res) => {
     image: user.image,
   };
 
-  const isPassswordSame = await bcrypt.compare(password, user.password);
+  const isPasswordSame = await bcrypt.compare(password, user.password);
 
   user.email = email;
   user.name = name;
@@ -95,7 +111,7 @@ const updateUser = async (req, res) => {
         role: user.role,
         image: user.image,
       }) ||
-      !isPassswordSame)
+      !isPasswordSame)
   ) {
     const token = user.generateJWT();
     res.clearCookie("jwt");
