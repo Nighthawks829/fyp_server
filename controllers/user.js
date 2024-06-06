@@ -7,10 +7,12 @@ const addUser = async (req, res) => {
   const { name, email, password, role } = req.body;
   let image = "";
 
-  if (req.files !== null) {
+  if (req.files && req.files.image) {
     const file = req.files.image;
     image = file.name;
-    file.mv(`${__dirname}/../../client/public/uploads/${file.name}`, (error) => {
+    const uploadPath = `${__dirname}/../../client/public/uploads/${file.name}`;
+
+    file.mv(uploadPath, (error) => {
       if (error) {
         console.error(error);
         return res
@@ -21,11 +23,11 @@ const addUser = async (req, res) => {
   }
 
   const user = await User.create({
-    name: name,
-    email: email,
-    password: password,
-    role: role,
-    image: image,
+    name,
+    email,
+    password,
+    role,
+    image,
   });
 
   const token = user.generateJWT();
@@ -33,10 +35,9 @@ const addUser = async (req, res) => {
     res.status(StatusCodes.CREATED).json({
       user: {
         userId: user.id,
-        name: name,
-        email: email,
-        password: password,
-        role: role,
+        name,
+        email,
+        role,
         image: user.image,
       },
       token,
@@ -72,10 +73,12 @@ const getUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   const {
-    body: { name, email, password, role, image },
+    body: { name, email, password, role },
     params: { id: userId },
     user: { userId: ownId },
   } = req;
+
+  let image = "";
 
   if (!name || !email || !password || !role) {
     throw new BadRequestError("Please provide all values");
@@ -97,6 +100,7 @@ const updateUser = async (req, res) => {
   user.name = name;
   user.password = password;
   user.role = role;
+  user.image = req.files.image.name;
 
   const respond = await user.save();
 
@@ -136,6 +140,20 @@ const updateUser = async (req, res) => {
   }
   // Admin update other user profile and did not generate new token
   else {
+    if (req.files && req.files.image) {
+      const file = req.files.image;
+      image = file.name;
+      const uploadPath = `${__dirname}/../../client/public/uploads/${file.name}`;
+      file.mv(uploadPath, (error) => {
+        if (error) {
+          console.error(error);
+          return res
+            .status(StatusCodes.INTERNAL_SERVER_ERROR)
+            .json({ msg: error });
+        }
+      });
+    }
+
     res.status(StatusCodes.OK).json({
       user: {
         userId: userId,
