@@ -1,6 +1,8 @@
-const Dashboard = require("../models/Dashboards");
+const { DashboardSchema } = require("../models/associations");
 const { StatusCodes } = require("http-status-codes");
 const { NotFoundError, BadRequestError, ForbiddenError } = require("../errors");
+
+const Dashboard = DashboardSchema;
 
 const getAllDashboard = async (req, res) => {
   const dashboards = await Dashboard.findAll();

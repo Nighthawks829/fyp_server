@@ -1,8 +1,11 @@
-const SensorControl = require("../models/SensorControls");
-const Sensor = require("../models/Sensors");
+const {
+  SensorControlsSchema,
+} = require("../models/associations");
 const mqtt = require("../mqtt/connect");
 const { StatusCodes } = require("http-status-codes");
 const { NotFoundError, BadRequestError } = require("../errors");
+
+const SensorControl = SensorControlsSchema;
 
 const getAllSensorControls = async (req, res) => {
   const sensorControls = await SensorControl.findAll();
