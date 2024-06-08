@@ -1,7 +1,6 @@
 const { DataTypes, Sequelize } = require("sequelize");
 const sequelize = require("../db/connect");
 
-const UserSchema = require("./Users");
 const SensorSchema = require("./Sensors");
 
 const DashboardSchema = sequelize.define(
@@ -57,7 +56,6 @@ const DashboardSchema = sequelize.define(
   }
 );
 
-DashboardSchema.belongsTo(UserSchema, { foreignKey: "userId" });
 DashboardSchema.belongsTo(SensorSchema, { foreignKey: "sensorId" });
 
 sequelize

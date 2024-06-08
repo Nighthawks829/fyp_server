@@ -209,6 +209,32 @@ const getUserWithBoards = async (req, res) => {
   }
 };
 
+const getUserWithDashboards = async (req, res) => {
+  const user = await User.findByPk(req.params.id, {
+    include: [
+      {
+        model: DashboardSchema,
+        as: "dashboards",
+      },
+    ],
+  });
+
+  if (user) {
+    res.status(StatusCodes.OK).json({
+      user: {
+        userId: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        image: user.image,
+        dashboards: user.dashboards,
+      },
+    });
+  } else {
+    throw new NotFoundError(`No user with id ${req.params.id}`);
+  }
+};
+
 module.exports = {
   addUser,
   getAllUsers,
