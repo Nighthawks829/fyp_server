@@ -29,6 +29,15 @@ SensorControlsSchema.belongsTo(UserSchema, {
   as: "user",
 });
 
+SensorSchema.hasMany(SensorControlsSchema, {
+  foreignKey: "sensorId",
+  as: "sensorControls",
+});
+SensorControlsSchema.belongsTo(SensorSchema, {
+  foreignKey: "sensorId",
+  as: "sensor",
+});
+
 module.exports = {
   UserSchema,
   BoardSchema,

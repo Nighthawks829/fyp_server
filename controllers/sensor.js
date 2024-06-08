@@ -1,6 +1,11 @@
-const Sensor = require("../models/Sensors");
+const {
+  SensorControlsSchema,
+  SensorSchema,
+} = require("../models/associations");
 const { StatusCodes } = require("http-status-codes");
 const { NotFoundError, BadRequestError } = require("../errors");
+
+const Sensor = SensorSchema;
 
 const getAllSensors = async (req, res) => {
   const sensors = await Sensor.findAll();
@@ -105,6 +110,34 @@ const deleteSensor = async (req, res) => {
   }
 
   res.status(StatusCodes.OK).json({ msg: `Success delete sensor ${sensorId}` });
+};
+
+const getSensorWithSensorControls = async (req, res) => {
+  const sensor = await Sensor.findByPk(req.params.id, {
+    include: [
+      {
+        model: SensorControlsSchema,
+        as: "sensorControls",
+      },
+    ],
+  });
+
+  if (sensor) {
+    res.status(StatusCodes.OK).json({
+      sensor: {
+        sensorId: sensor.id,
+        boardId: sensor.boardId,
+        name: sensor.name,
+        pin: sensor.pin,
+        type: sensor.type,
+        topic: sensor.topic,
+        image: sensor.image,
+        sensorControls: sensor.sensorControls,
+      },
+    });
+  } else {
+    throw new NotFoundError(`No sensor with id ${req.params.id}`);
+  }
 };
 
 module.exports = {

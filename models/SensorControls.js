@@ -1,9 +1,6 @@
 const { DataTypes, Sequelize } = require("sequelize");
 const sequelize = require("../db/connect");
 
-const SensorSchema = require("./Sensors");
-const UserSchema = require("./Users");
-
 const SensorControlsSchema = sequelize.define(
   "SensorControls",
   {
@@ -42,8 +39,6 @@ const SensorControlsSchema = sequelize.define(
     freezeTableName: true,
   }
 );
-
-SensorControlsSchema.belongsTo(SensorSchema, { foreignKey: "sensorId" });
 
 sequelize
   .sync()
