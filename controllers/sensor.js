@@ -3,6 +3,7 @@ const {
   SensorSchema,
   SensorDataSchema,
   DashboardSchema,
+  NotificationSchema,
 } = require("../models/associations");
 const { StatusCodes } = require("http-status-codes");
 const { NotFoundError, BadRequestError } = require("../errors");
@@ -183,6 +184,34 @@ const getSensorWithDashboards = async (req, res) => {
         type: sensor.type,
         topic: sensor.topic,
         image: sensor.image,
+      },
+    });
+  } else {
+    throw new NotFoundError(`No sensor with id ${req.params.id}`);
+  }
+};
+
+const getSensorWithNotifications = async (req, res) => {
+  const sensor = await Sensor.findByPk(req.params.id, {
+    include: [
+      {
+        model: NotificationSchema,
+        as: "notifications",
+      },
+    ],
+  });
+
+  if (sensor) {
+    res.status(StatusCodes.OK).json({
+      sensor: {
+        sensorId: sensor.id,
+        boardId: sensor.boardId,
+        name: sensor.name,
+        pin: sensor.pin,
+        type: sensor.type,
+        topic: sensor.topic,
+        image: sensor.image,
+        notifications: sensor.notifications,
       },
     });
   } else {

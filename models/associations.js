@@ -57,6 +57,15 @@ DashboardSchema.belongsTo(SensorSchema, {
   as: "sensor",
 });
 
+SensorSchema.hasMany(NotificationSchema, {
+  foreignKey: "sensorId",
+  as: "notifications",
+});
+NotificationSchema.belongsTo(SensorSchema, {
+  foreignKey: "sensorId",
+  as: "sensor",
+});
+
 module.exports = {
   UserSchema,
   BoardSchema,
