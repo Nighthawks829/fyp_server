@@ -2,6 +2,7 @@ const { DataTypes, Sequelize } = require("sequelize");
 const sequelize = require("../db/connect");
 
 const UserSchema = require("./Users");
+const SensorSchema = require("./Sensors");
 
 const BoardSchema = sequelize.define(
   "Boards",
@@ -85,8 +86,6 @@ const BoardSchema = sequelize.define(
     },
   }
 );
-
-BoardSchema.belongsTo(UserSchema, { foreignKey: "userId" });
 
 sequelize
   .sync()

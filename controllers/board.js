@@ -1,6 +1,9 @@
-const Board = require("../models/Boards");
+const { BoardSchema, SensorSchema } = require("../models/associations");
 const { StatusCodes } = require("http-status-codes");
 const { NotFoundError, BadRequestError } = require("../errors");
+
+// Rename BoardSchema to Board
+const Board = BoardSchema;
 
 const getAllBoards = async (req, res) => {
   const boards = await Board.findAll();
@@ -9,7 +12,14 @@ const getAllBoards = async (req, res) => {
 };
 
 const getBoard = async (req, res) => {
-  const board = await Board.findByPk(req.params.id);
+  const board = await Board.findByPk(req.params.id, {
+    include: [
+      {
+        model: SensorSchema,
+        as: "sensors",
+      },
+    ],
+  });
 
   if (board) {
     res.status(StatusCodes.OK).json({
@@ -21,6 +31,7 @@ const getBoard = async (req, res) => {
         ip_address: board.ip_address,
         image: board.image,
         userId: board.userId,
+        sensors: board.sensors,
       },
     });
   } else {
