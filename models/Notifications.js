@@ -87,7 +87,6 @@ const NotificationSchema = sequelize.define(
   }
 );
 
-NotificationSchema.belongsTo(UserSchema, { foreignKey: "userId" });
 NotificationSchema.belongsTo(SensorSchema, { foreignKey: "sensorId" });
 
 sequelize

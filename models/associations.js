@@ -2,6 +2,7 @@ const UserSchema = require("./Users");
 const BoardSchema = require("./Boards");
 const SensorSchema = require("./Sensors");
 const DashboardSchema = require("./Dashboards");
+const NotificationSchema = require("./Notifications");
 
 UserSchema.hasMany(BoardSchema, { foreignKey: "userId", as: "boards" });
 BoardSchema.belongsTo(UserSchema, { foreignKey: "userId", as: "user" });
@@ -12,4 +13,16 @@ SensorSchema.belongsTo(BoardSchema, { foreignKey: "boardId", as: "board" });
 UserSchema.hasMany(DashboardSchema, { foreignKey: "userId", as: "dashboards" });
 DashboardSchema.belongsTo(UserSchema, { foreignKey: "userId", as: "user" });
 
-module.exports = { UserSchema, BoardSchema, SensorSchema, DashboardSchema };
+UserSchema.hasMany(NotificationSchema, {
+  foreignKey: "userId",
+  as: "notifications",
+});
+NotificationSchema.belongsTo(UserSchema, { foreignKey: "userId", as: "user" });
+
+module.exports = {
+  UserSchema,
+  BoardSchema,
+  SensorSchema,
+  DashboardSchema,
+  NotificationSchema,
+};

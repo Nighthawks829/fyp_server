@@ -1,4 +1,9 @@
-const { BoardSchema, UserSchema } = require("../models/associations");
+const {
+  BoardSchema,
+  UserSchema,
+  DashboardSchema,
+  NotificationSchema,
+} = require("../models/associations");
 const { StatusCodes } = require("http-status-codes");
 const { BadRequestError, NotFoundError } = require("../errors");
 const bcrypt = require("bcrypt");
@@ -228,6 +233,32 @@ const getUserWithDashboards = async (req, res) => {
         role: user.role,
         image: user.image,
         dashboards: user.dashboards,
+      },
+    });
+  } else {
+    throw new NotFoundError(`No user with id ${req.params.id}`);
+  }
+};
+
+const getUserWithNotifications = async (req, res) => {
+  const user = await User.findByPk(req.params.id, {
+    include: [
+      {
+        model: NotificationSchema,
+        as: "notifications",
+      },
+    ],
+  });
+
+  if (user) {
+    res.status(StatusCodes.OK).json({
+      user: {
+        userId: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        image: user.image,
+        notifications: user.notifications,
       },
     });
   } else {
