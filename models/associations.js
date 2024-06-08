@@ -4,6 +4,7 @@ const SensorSchema = require("./Sensors");
 const DashboardSchema = require("./Dashboards");
 const NotificationSchema = require("./Notifications");
 const SensorControlsSchema = require("./SensorControls");
+const SensorDataSchema = require("./SensorData");
 
 UserSchema.hasMany(BoardSchema, { foreignKey: "userId", as: "boards" });
 BoardSchema.belongsTo(UserSchema, { foreignKey: "userId", as: "user" });
@@ -38,6 +39,15 @@ SensorControlsSchema.belongsTo(SensorSchema, {
   as: "sensor",
 });
 
+SensorSchema.hasMany(SensorDataSchema, {
+  foreignKey: "sensorId",
+  as: "sensorData",
+});
+SensorDataSchema.belongsTo(SensorSchema, {
+  foreignKey: "sensorId",
+  as: "sensor",
+});
+
 module.exports = {
   UserSchema,
   BoardSchema,
@@ -45,4 +55,5 @@ module.exports = {
   DashboardSchema,
   NotificationSchema,
   SensorControlsSchema,
+  SensorDataSchema,
 };

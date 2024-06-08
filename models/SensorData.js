@@ -1,7 +1,6 @@
 const { DataTypes, Sequelize, where } = require("sequelize");
 const sequelize = require("../db/connect");
 
-const SensorSchema = require("./Sensors");
 const NotificationSchema = require("./Notifications");
 
 const sendEmail = require("../utils/sendEmail");
@@ -91,8 +90,6 @@ const SensorDataSchema = sequelize.define(
     },
   }
 );
-
-SensorDataSchema.belongsTo(SensorSchema, { foreignKey: "sensorId" });
 
 sequelize
   .sync()

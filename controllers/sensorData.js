@@ -1,8 +1,8 @@
-const SensorData = require("../models/SensorData");
-const Sensor = require("../models/Sensors");
+const { SensorDataSchema, SensorSchema } = require("../models/associations");
 const { StatusCodes } = require("http-status-codes");
 const { BadRequestError, NotFoundError } = require("../errors");
 
+const SensorData = SensorDataSchema;
 const getAllSensorData = async (req, res) => {
   const sensorData = await SensorData.findAll();
 
@@ -30,7 +30,7 @@ const getSensorData = async (req, res) => {
 const addSensorData = async (req, res) => {
   const { topic, data, unit } = req.body;
 
-  const sensor = await Sensor.findOne({
+  const sensor = await SensorSchema.findOne({
     where: {
       topic: topic,
     },
