@@ -1,6 +1,8 @@
-const User = require("../models/Users");
+const { UserSchema } = require("../models/associations");
 const { StatusCodes } = require("http-status-codes");
 const { BadRequestError, UnauthenticatedError } = require("../errors");
+
+const User = UserSchema;
 
 const login = async (req, res) => {
   const { email, password } = req.body;
@@ -25,7 +27,7 @@ const login = async (req, res) => {
   }
 
   const token = user.generateJWT();
-  
+
   res.cookie("token", token, {
     // httpOnly: true,
     httpOnly: false,

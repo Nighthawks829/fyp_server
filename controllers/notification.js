@@ -1,6 +1,8 @@
-const Notification = require("../models/Notifications");
+const { NotificationSchema } = require("../models/associations");
 const { StatusCodes } = require("http-status-codes");
 const { NotFoundError, BadRequestError, ForbiddenError } = require("../errors");
+
+const Notification = NotificationSchema;
 
 const getAllNotifications = async (req, res) => {
   const notifications = await Notification.findAll();
@@ -144,7 +146,7 @@ const deleteNotification = async (req, res) => {
   if (!notificationUserId) {
     throw new NotFoundError(`No notification with id ${notificationId}`);
   }
-  
+
   if (notificationUserId.userId !== req.user.userId) {
     throw new ForbiddenError("No allow to delete other user notification");
   }

@@ -172,7 +172,14 @@ const getSensorWithSensorData = async (req, res) => {
 };
 
 const getSensorWithDashboards = async (req, res) => {
-  const sensor = await Sensor.findByPk(req.params.id);
+  const sensor = await Sensor.findByPk(req.params.id, {
+    include: [
+      {
+        model: DashboardSchema,
+        as: "dashboards",
+      },
+    ],
+  });
 
   if (sensor) {
     res.status(StatusCodes.OK).json({
@@ -184,6 +191,7 @@ const getSensorWithDashboards = async (req, res) => {
         type: sensor.type,
         topic: sensor.topic,
         image: sensor.image,
+        dashboards: sensor.dashboards,
       },
     });
   } else {
