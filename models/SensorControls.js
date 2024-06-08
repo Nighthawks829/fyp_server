@@ -43,7 +43,6 @@ const SensorControlsSchema = sequelize.define(
   }
 );
 
-SensorControlsSchema.belongsTo(UserSchema, { foreignKey: "userId" });
 SensorControlsSchema.belongsTo(SensorSchema, { foreignKey: "sensorId" });
 
 sequelize
