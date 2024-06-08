@@ -1,8 +1,9 @@
-const User = require("../models/Users");
+const { BoardSchema, UserSchema } = require("../models/associations");
 const { StatusCodes } = require("http-status-codes");
 const { BadRequestError, NotFoundError } = require("../errors");
 const bcrypt = require("bcrypt");
 
+const User = UserSchema;
 const addUser = async (req, res) => {
   const { name, email, password, role } = req.body;
   let image = "";
@@ -180,6 +181,32 @@ const deleteUser = async (req, res) => {
   res
     .status(StatusCodes.OK)
     .json({ msg: `Success delete user ${req.params.id}` });
+};
+
+const getUserWithBoards = async (req, res) => {
+  const user = await User.findByPk(req.params.id, {
+    include: [
+      {
+        model: BoardSchema,
+        as: "boards",
+      },
+    ],
+  });
+
+  if (user) {
+    res.status(StatusCodes.OK).json({
+      user: {
+        userId: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        image: user.image,
+        boards: user.boards,
+      },
+    });
+  } else {
+    throw new NotFoundError(`No user with id ${req.params.id}`);
+  }
 };
 
 module.exports = {
