@@ -40,7 +40,23 @@ const getBoard = async (req, res) => {
 };
 
 const addBoard = async (req, res) => {
-  const { name, type, location, ip_address, image, userId } = req.body;
+  const { name, type, location, ip_address, userId } = req.body;
+  let image = "";
+
+  if (req.files && req.files.image) {
+    const file = req.files.image;
+    image = file.name;
+    const uploadPath = `${__dirname}/../../client/public/uploads/${file.name}`;
+
+    file.mv(uploadPath, (error) => {
+      if (error) {
+        console.error(error);
+        return res
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: error });
+      }
+    });
+  }
 
   const board = await Board.create({
     name: name,
@@ -59,7 +75,7 @@ const addBoard = async (req, res) => {
         type: type,
         location: location,
         ip_address: ip_address,
-        image: image,
+        image: board.image,
         userId: userId,
       },
     });
