@@ -86,9 +86,10 @@ const addBoard = async (req, res) => {
 
 const updateBoard = async (req, res) => {
   const {
-    body: { name, type, location, ip_address, image, userId },
+    body: { name, type, location, ip_address, userId },
     params: { id: boardId },
   } = req;
+  let image = "";
 
   if (!name || !type || !location || !ip_address || !userId) {
     throw new BadRequestError("Please provide all values");
@@ -104,6 +105,20 @@ const updateBoard = async (req, res) => {
     ip_address: board.ip_address,
     image: board.image,
   };
+
+  if (req.files && req.files.image) {
+    const file = req.files.image;
+    image = file.name;
+    const uploadPath = `${__dirname}/../../client/public/uploads/${file.name}`;
+    file.mv(uploadPath, (error) => {
+      if (error) {
+        console.error(error);
+        return res
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: error });
+      }
+    });
+  }
 
   board.name = name;
   board.type = type;
