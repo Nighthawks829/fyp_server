@@ -37,7 +37,23 @@ const getSensor = async (req, res) => {
 };
 
 const addSensor = async (req, res) => {
-  const { boardId, name, pin, type, topic, image } = req.body;
+  const { boardId, name, pin, type, topic } = req.body;
+  let image = "";
+
+  if (req.files && req.files.image) {
+    const file = req.files.image;
+    image = file.name;
+    const uploadPath = `${__dirname}/../../client/public/uploads/${file.name}`;
+
+    file.mv(uploadPath, (error) => {
+      if (error) {
+        console.error(error);
+        return res
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: error });
+      }
+    });
+  }
 
   const sensor = await Sensor.create({
     boardId: boardId,
