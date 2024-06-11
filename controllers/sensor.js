@@ -119,11 +119,30 @@ const addSensor = async (req, res) => {
 
 const updateSensor = async (req, res) => {
   const {
-    body: { boardId, name, pin, type, topic, image },
+    body: { boardId, name, pin, type, topic },
     params: { id: sensorId },
   } = req;
+  let image = "";
+  
+  if (!boardId || !name || !pin || !type || !topic) {
+    throw new BadRequestError("Please provide all values");
+  }
 
   const sensor = await Sensor.findByPk(sensorId);
+
+  if (req.files && req.files.image) {
+    const file = req.files.image;
+    image = file.name;
+    const uploadPath = `${__dirname}/../../client/public/uploads/${file.name}`;
+    file.mv(uploadPath, (error) => {
+      if (error) {
+        console.error(error);
+        return res
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: error });
+      }
+    });
+  }
 
   sensor.boardId = boardId;
   sensor.name = name;
@@ -131,10 +150,6 @@ const updateSensor = async (req, res) => {
   sensor.type = type;
   sensor.topic = topic;
   sensor.image = image;
-
-  if (!boardId || !name || !pin || !type || !topic || !image) {
-    throw new BadRequestError("Please provide all values");
-  }
 
   await sensor.save();
 
