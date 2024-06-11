@@ -38,7 +38,15 @@ const getAllSensors = async (req, res) => {
 };
 
 const getSensor = async (req, res) => {
-  const sensor = await Sensor.findByPk(req.params.id);
+  const sensor = await Sensor.findByPk(req.params.id, {
+    include: [
+      {
+        model: BoardSchema,
+        as: "board",
+        attributes: ["name"],
+      },
+    ],
+  });
 
   if (sensor) {
     res.status(StatusCodes.OK).json({
@@ -50,6 +58,7 @@ const getSensor = async (req, res) => {
         type: sensor.type,
         topic: sensor.topic,
         image: sensor.image,
+        boardName: sensor.board ? sensor.board.name : null,
       },
     });
   } else {
