@@ -104,7 +104,6 @@ const updateDashboard = async (req, res) => {
 
 const deleteDashboard = async (req, res) => {
   const dashboardId = req.params.id;
-  console.log("Inside the delete API" + req.params.id);
   const dashboardUserId = await Dashboard.findByPk(dashboardId);
 
   if (!dashboardUserId) {
