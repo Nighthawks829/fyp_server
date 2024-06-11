@@ -4,6 +4,7 @@ const {
   SensorDataSchema,
   DashboardSchema,
   NotificationSchema,
+  BoardSchema,
 } = require("../models/associations");
 const { StatusCodes } = require("http-status-codes");
 const { NotFoundError, BadRequestError } = require("../errors");
@@ -11,9 +12,29 @@ const { NotFoundError, BadRequestError } = require("../errors");
 const Sensor = SensorSchema;
 
 const getAllSensors = async (req, res) => {
-  const sensors = await Sensor.findAll();
+  const sensors = await Sensor.findAll({
+    include: {
+      model: BoardSchema,
+      as: "board",
+      attributes: ["name"],
+    },
+  });
 
-  res.status(StatusCodes.OK).json({ sensors, count: sensors.length });
+  const formattedSensors = sensors.map((sensor) => ({
+    id: sensor.id,
+    boardId: sensor.boardId,
+    name: sensor.name,
+    pin: sensor.pin,
+    type: sensor.type,
+    topic: sensor.topic,
+    image: sensor.image,
+    boardName: sensor.board.name, // Include the board name
+    // Add other sensor attributes as needed
+  }));
+
+  res
+    .status(StatusCodes.OK)
+    .json({ sensors: formattedSensors, count: sensors.length });
 };
 
 const getSensor = async (req, res) => {
