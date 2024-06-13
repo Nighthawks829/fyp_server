@@ -1,15 +1,36 @@
-const { NotificationSchema } = require("../models/associations");
+const { NotificationSchema, SensorSchema } = require("../models/associations");
 const { StatusCodes } = require("http-status-codes");
 const { NotFoundError, BadRequestError, ForbiddenError } = require("../errors");
 
 const Notification = NotificationSchema;
 
 const getAllNotifications = async (req, res) => {
-  const notifications = await Notification.findAll();
+  const notifications = await Notification.findAll({
+    include: {
+      model: SensorSchema,
+      as: "sensor",
+      attributes: ["name"],
+    },
+  });
 
-  res
-    .status(StatusCodes.OK)
-    .json({ notifications, count: notifications.length });
+  const formattedNotifications = notifications.map((notification) => ({
+    id: notification.id,
+    userId: notification.userId,
+    sensorId: notification.sensorId,
+    name: notification.name,
+    threshold: notification.threshold,
+    condition: notification.condition,
+    message: notification.message,
+    platform: notification.platform,
+    address: notification.address,
+    sensorName: notification.sensor.name,
+    // Add other sensor attributes as needed
+  }));
+
+  res.status(StatusCodes.OK).json({
+    notifications: formattedNotifications,
+    count: notifications.length,
+  });
 };
 
 const getNotification = async (req, res) => {
