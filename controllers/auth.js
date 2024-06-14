@@ -43,6 +43,7 @@ const login = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      image: user.image,
     }),
     {
       httpOnly: false,
@@ -58,6 +59,7 @@ const login = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      image: user.image,
     },
     token: token,
   });
