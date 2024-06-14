@@ -34,7 +34,13 @@ const getAllNotifications = async (req, res) => {
 };
 
 const getNotification = async (req, res) => {
-  const notification = await Notification.findByPk(req.params.id);
+  const notification = await Notification.findByPk(req.params.id, {
+    include: {
+      model: SensorSchema,
+      as: "sensor",
+      attributes: ["name"],
+    },
+  });
 
   if (notification) {
     res.status(StatusCodes.OK).json({
@@ -48,6 +54,7 @@ const getNotification = async (req, res) => {
         message: notification.message,
         platform: notification.platform,
         address: notification.address,
+        sensorName: notification.sensor.name,
       },
     });
   } else {
