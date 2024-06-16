@@ -11,10 +11,9 @@ const {
 
 const authenticateUser = require("../middleware/authenticationUser");
 
-router
-  .route("/")
-  .get(authenticateUser, getAllDashboard)
-  .post(authenticateUser, addDashboard);
+router.route("/").post(authenticateUser, addDashboard);
+
+router.route("/getAllDashboards/:id").get(authenticateUser, getAllDashboard);
 
 router
   .route("/:id")

@@ -5,7 +5,10 @@ const { NotFoundError, BadRequestError, ForbiddenError } = require("../errors");
 const Dashboard = DashboardSchema;
 
 const getAllDashboard = async (req, res) => {
-  const dashboards = await Dashboard.findAll();
+  const userId = req.params.id;
+  const dashboards = await Dashboard.findAll({
+    where: { userId: userId },
+  });
 
   res.status(StatusCodes.OK).json({ dashboards, count: dashboards.length });
 };
@@ -26,7 +29,7 @@ const getDashboard = async (req, res) => {
       },
     });
   } else {
-    throw new NotFoundError(`No dashboard with id ${dashboardId}`);
+    throw new NotFoundError(`No dashboard with userId ${dashboardId}`);
   }
 };
 
