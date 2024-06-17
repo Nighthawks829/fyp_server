@@ -68,28 +68,30 @@ const updateDashboard = async (req, res) => {
     params: { id: dashboardId },
   } = req;
 
-  if (
-    !userId ||
-    !sensorId ||
-    !name ||
-    control === null ||
-    control === undefined ||
-    !type
-  ) {
-    throw new BadRequestError("Please provide all values");
-  }
+  // if (
+  //   !userId ||
+  //   !sensorId ||
+  //   !name ||
+  //   control === null ||
+  //   control === undefined ||
+  //   !type
+  // ) {
+  //   throw new BadRequestError("Please provide all values");
+  // }
 
   if (req.user.userId !== userId) {
+    console.log(req.user.userId);
+    console.log(userId);
     throw new ForbiddenError("No allow to update other user dashboard");
   }
 
   const dashboard = await Dashboard.findByPk(dashboardId);
 
-  dashboard.userId = userId;
-  dashboard.sensorId = sensorId;
+  // dashboard.userId = userId;
+  // dashboard.sensorId = sensorId;
   dashboard.name = name;
-  dashboard.control = control;
-  dashboard.type = type;
+  // dashboard.control = control;
+  // dashboard.type = type;
 
   await dashboard.save();
 
