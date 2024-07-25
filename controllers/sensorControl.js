@@ -1,6 +1,4 @@
-const {
-  SensorControlsSchema,
-} = require("../models/associations");
+const { SensorControlsSchema } = require("../models/associations");
 const mqtt = require("../mqtt/connect");
 const { StatusCodes } = require("http-status-codes");
 const { NotFoundError, BadRequestError } = require("../errors");
@@ -35,7 +33,7 @@ const getSensorControl = async (req, res) => {
 };
 
 const addSensorControl = async (req, res) => {
-  const { userId, sensorId, value, topic } = req.body;
+  const { userId, sensorId, value, topic,unit } = req.body;
 
   const sensorControl = await SensorControl.create({
     userId: userId,
@@ -45,8 +43,12 @@ const addSensorControl = async (req, res) => {
 
   // const sensor = await Sensor.findByPk(sensorId);
   // const topic = sensor.topic;
+  const payload=JSON.stringify({
+    value:value,
+    unit:unit,
+  })
+  mqtt.publish(topic,payload );
 
-  mqtt.publish(topic, value);
 
   if (sensorControl) {
     res.status(StatusCodes.CREATED).json({
