@@ -19,10 +19,11 @@ const password = process.env.MQTT_PASSWORD;
 let client = mqtt.connect(connectUrl, {
   clientId: clientId,
   clean: true,
-  connectTimeout: 4000,
+  keepalive: 60,
+  connectTimeout: 10000,
   username: username,
   password: password,
-  reconnectPeriod: 1000,
+  reconnectPeriod: 3000,
 });
 
 client.on("connect", mqtt_connect);
@@ -47,14 +48,6 @@ function mqtt_subscribe(err, granted) {
 
 function mqtt_reconnect(err) {
   console.log("Reconnecting to MQTT Broker...");
-  client = mqtt.connect(connectUrl, {
-    clientId: clientId,
-    clean: true,
-    connectTimeout: 400,
-    username: username,
-    password: password,
-    reconnectPeriod: 1000,
-  });
 }
 
 function mqtt_error(err) {
