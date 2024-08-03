@@ -10,21 +10,21 @@ const getAllSensorData = async (req, res) => {
 };
 
 const getSensorData = async (req, res) => {
-  const sensorDataId = req.params.id;
-  const sensorData = await SensorData.findByPk(sensorDataId);
+  const sensorId = req.params.id;
+  // const sensorData = await SensorData.findByPk(sensorDataId);
+  const sensorData = await SensorData.findAll({
+    where: { sensorId: sensorId },
+    order:[['createdAt', 'ASC']]
+  });
 
-  if (sensorData) {
-    res.status(StatusCodes.OK).json({
-      sensorData: {
-        sensorDataId: sensorData.id,
-        sensorId: sensorData.sensorId,
-        data: sensorData.data,
-        unit: sensorData.unit,
-      },
-    });
-  } else {
-    throw new NotFoundError(`No sensor data with id ${sensorDataId}`);
-  }
+  const formattedSensorData = sensorData.map((sensorData) => ({
+    data: sensorData.data,
+  }));
+
+  res
+    .status(StatusCodes.OK)
+    .json({ sensorData: formattedSensorData, count: sensorData.length });
+
 };
 
 const addSensorData = async (req, res) => {
@@ -32,14 +32,14 @@ const addSensorData = async (req, res) => {
 
   const sensor = await SensorSchema.findOne({
     where: {
-      topic: topic,
-    },
+      topic: topic
+    }
   });
 
   const sensorData = await SensorData.create({
     sensorId: sensor.id,
     data: data,
-    unit: unit,
+    unit: unit
   });
 
   if (sensorData) {
@@ -48,8 +48,8 @@ const addSensorData = async (req, res) => {
         sensorDataId: sensorData.id,
         sensorId: sensorData.sensorId,
         data: sensorData.data,
-        unit: sensorData.unit,
-      },
+        unit: sensorData.unit
+      }
     });
   } else {
     throw new BadRequestError(
