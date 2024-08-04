@@ -1,16 +1,41 @@
-const { DashboardSchema } = require("../models/associations");
+const { DashboardSchema, SensorSchema } = require("../models/associations");
 const { StatusCodes } = require("http-status-codes");
 const { NotFoundError, BadRequestError, ForbiddenError } = require("../errors");
 
 const Dashboard = DashboardSchema;
+const Sensor = SensorSchema;
 
 const getAllDashboard = async (req, res) => {
   const userId = req.params.id;
   const dashboards = await Dashboard.findAll({
     where: { userId: userId },
+    include: [
+      {
+        model: Sensor,
+        as: "sensor",
+        attributes: ["type"]
+      }
+    ]
   });
 
-  res.status(StatusCodes.OK).json({ dashboards, count: dashboards.length });
+  const formattedDashboards = dashboards.map((dashboard) => {
+    const dashboardData = dashboard.toJSON();
+    return {
+      id: dashboardData.id,
+      userId: dashboardData.userId,
+      sensorId: dashboardData.sensorId,
+      name: dashboardData.name,
+      control: dashboardData.control,
+      type: dashboardData.type,
+      createdAt: dashboardData.createdAt,
+      updatedAt: dashboardData.updatedAt,
+      sensorType: dashboardData.sensor ? dashboardData.sensor.type : null
+    };
+  });
+
+  res
+    .status(StatusCodes.OK)
+    .json({ dashboards: formattedDashboards, count: dashboards.length });
 };
 
 const getDashboard = async (req, res) => {
@@ -25,8 +50,8 @@ const getDashboard = async (req, res) => {
         sensorId: dashboard.sensorId,
         name: dashboard.name,
         control: dashboard.control,
-        type: dashboard.type,
-      },
+        type: dashboard.type
+      }
     });
   } else {
     throw new NotFoundError(`No dashboard with userId ${dashboardId}`);
@@ -36,12 +61,23 @@ const getDashboard = async (req, res) => {
 const addDashboard = async (req, res) => {
   const { userId, sensorId, name, control, type } = req.body;
 
+  const sensor = await Sensor.findByPk(sensorId);
+
+  if (!sensor) {
+    throw new BadRequestError("Invalid sensor ID");
+  }
+
+  const finalControl =
+    sensor.type === "Analog Input" || sensor.type === "Digital Input"
+      ? false
+      : control;
+
   const dashboard = await Dashboard.create({
     userId: userId,
     sensorId: sensorId,
     name: name,
-    control: control,
-    type: type,
+    control: finalControl,
+    type: type
   });
 
   if (dashboard) {
@@ -52,8 +88,8 @@ const addDashboard = async (req, res) => {
         sensorId: dashboard.sensorId,
         name: dashboard.name,
         control: dashboard.control,
-        type: dashboard.type,
-      },
+        type: dashboard.type
+      }
     });
   } else {
     throw new BadRequestError(
@@ -65,7 +101,7 @@ const addDashboard = async (req, res) => {
 const updateDashboard = async (req, res) => {
   const {
     body: { userId, sensorId, name, control, type },
-    params: { id: dashboardId },
+    params: { id: dashboardId }
   } = req;
 
   // if (
@@ -102,8 +138,8 @@ const updateDashboard = async (req, res) => {
       sensorId: dashboard.sensorId,
       name: dashboard.name,
       control: dashboard.control,
-      type: dashboard.type,
-    },
+      type: dashboard.type
+    }
   });
 };
 
@@ -121,8 +157,8 @@ const deleteDashboard = async (req, res) => {
 
   const dashboard = await Dashboard.destroy({
     where: {
-      id: dashboardId,
-    },
+      id: dashboardId
+    }
   });
 
   if (!dashboard) {
@@ -139,5 +175,5 @@ module.exports = {
   getDashboard,
   addDashboard,
   updateDashboard,
-  deleteDashboard,
+  deleteDashboard
 };

@@ -27,20 +27,68 @@ const getSensorData = async (req, res) => {
     order: [["createdAt", "ASC"]]
   });
 
-  const combinedData = [...sensorData, ...sensorControls].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-  
+  const combinedData = [...sensorData, ...sensorControls].sort(
+    (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+  );
 
   const formattedData = combinedData.map((entry) => {
     if (entry instanceof SensorData) {
-      return { type: 'SensorData', data: entry.data, createdAt: entry.createdAt };
+      return {
+        type: "SensorData",
+        data: entry.data,
+        createdAt: entry.createdAt
+      };
     } else if (entry instanceof SensorControl) {
-      return { type: 'SensorControl', data: entry.value, createdAt: entry.createdAt };
+      return {
+        type: "SensorControl",
+        data: entry.value,
+        createdAt: entry.createdAt
+      };
     }
   });
 
   res
     .status(StatusCodes.OK)
     .json({ sensorData: formattedData, count: formattedData.length });
+};
+
+const getLatestSensorData = async (req, res) => {
+  const sensorId = req.params.id;
+  // const sensorData = await SensorData.findByPk(sensorDataId);
+  const sensorData = await SensorData.findAll({
+    where: { sensorId: sensorId },
+    order: [["createdAt", "ASC"]]
+  });
+
+  const sensorControls = await SensorControl.findAll({
+    where: { sensorId: sensorId },
+    order: [["createdAt", "ASC"]]
+  });
+
+  const combinedData = [...sensorData, ...sensorControls].sort(
+    (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+  );
+
+  const formattedData = combinedData.map((entry) => {
+    if (entry instanceof SensorData) {
+      return {
+        type: "SensorData",
+        data: entry.data,
+        createdAt: entry.createdAt
+      };
+    } else if (entry instanceof SensorControl) {
+      return {
+        type: "SensorControl",
+        data: entry.value,
+        createdAt: entry.createdAt
+      };
+    }
+  });
+
+
+  res.status(StatusCodes.OK).json({
+    sensorData: formattedData[formattedData.length - 1],
+  });
 };
 
 const addSensorData = async (req, res) => {
@@ -74,4 +122,9 @@ const addSensorData = async (req, res) => {
   }
 };
 
-module.exports = { getAllSensorData, getSensorData, addSensorData };
+module.exports = {
+  getAllSensorData,
+  getSensorData,
+  getLatestSensorData,
+  addSensorData
+};
