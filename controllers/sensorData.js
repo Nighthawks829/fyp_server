@@ -1,8 +1,13 @@
-const { SensorDataSchema, SensorSchema } = require("../models/associations");
+const {
+  SensorDataSchema,
+  SensorSchema,
+  SensorControlsSchema
+} = require("../models/associations");
 const { StatusCodes } = require("http-status-codes");
 const { BadRequestError, NotFoundError } = require("../errors");
 
 const SensorData = SensorDataSchema;
+const SensorControl = SensorControlsSchema;
 const getAllSensorData = async (req, res) => {
   const sensorData = await SensorData.findAll();
 
@@ -14,17 +19,28 @@ const getSensorData = async (req, res) => {
   // const sensorData = await SensorData.findByPk(sensorDataId);
   const sensorData = await SensorData.findAll({
     where: { sensorId: sensorId },
-    order:[['createdAt', 'ASC']]
+    order: [["createdAt", "ASC"]]
   });
 
-  const formattedSensorData = sensorData.map((sensorData) => ({
-    data: sensorData.data,
-  }));
+  const sensorControls = await SensorControl.findAll({
+    where: { sensorId: sensorId },
+    order: [["createdAt", "ASC"]]
+  });
+
+  const combinedData = [...sensorData, ...sensorControls].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  
+
+  const formattedData = combinedData.map((entry) => {
+    if (entry instanceof SensorData) {
+      return { type: 'SensorData', data: entry.data, createdAt: entry.createdAt };
+    } else if (entry instanceof SensorControl) {
+      return { type: 'SensorControl', data: entry.value, createdAt: entry.createdAt };
+    }
+  });
 
   res
     .status(StatusCodes.OK)
-    .json({ sensorData: formattedSensorData, count: sensorData.length });
-
+    .json({ sensorData: formattedData, count: formattedData.length });
 };
 
 const addSensorData = async (req, res) => {

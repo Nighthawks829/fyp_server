@@ -24,8 +24,8 @@ const getSensorControl = async (req, res) => {
         sensorControlId: sensorControl.id,
         userId: sensorControl.userId,
         sensorId: sensorControl.sensorId,
-        value: sensorControl.value,
-      },
+        value: sensorControl.value
+      }
     });
   } else {
     throw new NotFoundError(`No sensor control with id ${sensorControlId}`);
@@ -33,22 +33,21 @@ const getSensorControl = async (req, res) => {
 };
 
 const addSensorControl = async (req, res) => {
-  const { userId, sensorId, value, topic,unit } = req.body;
+  const { userId, sensorId, value, topic, unit } = req.body;
 
   const sensorControl = await SensorControl.create({
     userId: userId,
     sensorId: sensorId,
-    value: value,
+    value: value
   });
 
   // const sensor = await Sensor.findByPk(sensorId);
   // const topic = sensor.topic;
-  const payload=JSON.stringify({
-    value:value,
-    unit:unit,
-  })
-  mqtt.publish(topic,payload );
-
+  const payload = JSON.stringify({
+    value: value,
+    unit: unit
+  });
+  mqtt.publish(topic, payload);
 
   if (sensorControl) {
     res.status(StatusCodes.CREATED).json({
@@ -56,8 +55,8 @@ const addSensorControl = async (req, res) => {
         sensorControlId: sensorControl.id,
         userId: sensorControl.userId,
         sensorId: sensorControl.sensorId,
-        value: sensorControl.value,
-      },
+        value: sensorControl.value
+      }
     });
   } else {
     throw new BadRequestError(
@@ -69,5 +68,5 @@ const addSensorControl = async (req, res) => {
 module.exports = {
   getAllSensorControls,
   getSensorControl,
-  addSensorControl,
+  addSensorControl
 };
