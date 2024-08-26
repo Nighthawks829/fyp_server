@@ -237,8 +237,8 @@ const updateUser = async (req, res) => {
       !isPasswordSame)
   ) {
     const token = user.generateJWT();
-    res.clearCookie("jwt");
-    res.cookie("jwt", token, {
+    res.clearCookie("user");
+    res.cookie("user", token, {
       httpOnly: true,
       secure: false, // Use secure cookies in production
       sameSite: "strict",
