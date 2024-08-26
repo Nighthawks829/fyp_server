@@ -5,12 +5,14 @@ const { NotFoundError, BadRequestError, ForbiddenError } = require("../errors");
 const Notification = NotificationSchema;
 
 const getAllNotifications = async (req, res) => {
+  const userId = req.user.userId;
   const notifications = await Notification.findAll({
+    where: { userId: userId },
     include: {
       model: SensorSchema,
       as: "sensor",
-      attributes: ["name"],
-    },
+      attributes: ["name"]
+    }
   });
 
   const formattedNotifications = notifications.map((notification) => ({
@@ -23,13 +25,12 @@ const getAllNotifications = async (req, res) => {
     message: notification.message,
     platform: notification.platform,
     address: notification.address,
-    sensorName: notification.sensor.name,
-    // Add other sensor attributes as needed
+    sensorName: notification.sensor.name
   }));
 
   res.status(StatusCodes.OK).json({
     notifications: formattedNotifications,
-    count: notifications.length,
+    count: notifications.length
   });
 };
 
@@ -38,8 +39,8 @@ const getNotification = async (req, res) => {
     include: {
       model: SensorSchema,
       as: "sensor",
-      attributes: ["name"],
-    },
+      attributes: ["name"]
+    }
   });
 
   if (notification) {
@@ -54,8 +55,8 @@ const getNotification = async (req, res) => {
         message: notification.message,
         platform: notification.platform,
         address: notification.address,
-        sensorName: notification.sensor.name,
-      },
+        sensorName: notification.sensor.name
+      }
     });
   } else {
     throw new NotFoundError(`No notification with id ${req.params.id}`);
@@ -71,7 +72,7 @@ const addNotification = async (req, res) => {
     condition,
     message,
     platform,
-    address,
+    address
   } = req.body;
 
   const notification = await Notification.create({
@@ -82,7 +83,7 @@ const addNotification = async (req, res) => {
     condition: condition,
     message: message,
     platform: platform,
-    address: address,
+    address: address
   });
 
   if (notification) {
@@ -96,8 +97,8 @@ const addNotification = async (req, res) => {
         condition: notification.condition,
         message: notification.message,
         platform: notification.platform,
-        address: notification.address,
-      },
+        address: notification.address
+      }
     });
   } else {
     throw new BadRequestError(
@@ -116,9 +117,9 @@ const updateNotification = async (req, res) => {
       condition,
       message,
       platform,
-      address,
+      address
     },
-    params: { id: notificationId },
+    params: { id: notificationId }
   } = req;
 
   if (
@@ -161,8 +162,8 @@ const updateNotification = async (req, res) => {
       condition: notification.condition,
       message: notification.message,
       platform: notification.platform,
-      address: notification.address,
-    },
+      address: notification.address
+    }
   });
 };
 
@@ -181,8 +182,8 @@ const deleteNotification = async (req, res) => {
 
   const notification = await Notification.destroy({
     where: {
-      id: notificationId,
-    },
+      id: notificationId
+    }
   });
 
   if (!notification) {
@@ -199,5 +200,5 @@ module.exports = {
   getNotification,
   addNotification,
   updateNotification,
-  deleteNotification,
+  deleteNotification
 };
