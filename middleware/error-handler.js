@@ -3,10 +3,10 @@ const { StatusCodes } = require("http-status-codes");
 const errorHandlerMiddleware = (err, req, res, next) => {
   let customError = {
     statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
-    msg: err.message || "Something went wrong try again later",
+    msg: err.message || "Something went wrong try again later"
   };
 
-  // console.log(err);
+  console.log(err)
 
   // This block catches a 'SequelizeUniqueConstraintError' which occurs when a
   // unique constraint is violated in Sequelize.
@@ -40,6 +40,29 @@ const errorHandlerMiddleware = (err, req, res, next) => {
       customError.msg = customError.msg.replace(/\./g, " ");
       console.log(customError.msg);
     }
+    customError.statusCode = StatusCodes.BAD_REQUEST;
+  }
+
+  if (err.name === "SequelizeForeignKeyConstraintError") {
+    customError.msg =
+      "Cannot delete or update this record because it's referenced in other records.";
+
+    // Customizing the message further based on the table/field involved
+    if (err.fields.includes("boardId")) {
+      customError.msg =
+        "This board cannot be deleted because it has associated sensors.";
+    }
+
+    if (err.fields.includes("sensorId")) {
+      customError.msg =
+        "This sensor cannot be deleted because it has associated records.";
+    }
+
+    if (err.fields.includes("userId")) {
+      customError.msg =
+        "This user cannot be deleted because it has associated records.";
+    }
+
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
 
