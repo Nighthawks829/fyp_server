@@ -74,6 +74,7 @@ const getLatestSensorData = async (req, res) => {
       return {
         type: "SensorData",
         data: entry.data,
+        unit: entry.unit,
         createdAt: entry.createdAt
       };
     } else if (entry instanceof SensorControl) {
@@ -85,9 +86,8 @@ const getLatestSensorData = async (req, res) => {
     }
   });
 
-
   res.status(StatusCodes.OK).json({
-    sensorData: formattedData[formattedData.length - 1],
+    sensorData: formattedData[formattedData.length - 1]
   });
 };
 
