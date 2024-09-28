@@ -15,3 +15,5 @@ app.listen(port, async () => {
     console.log(error);
   }
 });
+
+module.exports = app;

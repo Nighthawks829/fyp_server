@@ -6,7 +6,7 @@ const errorHandlerMiddleware = (err, req, res, next) => {
     msg: err.message || "Something went wrong try again later"
   };
 
-  console.log(err)
+  // console.log(err)
 
   // This block catches a 'SequelizeUniqueConstraintError' which occurs when a
   // unique constraint is violated in Sequelize.
