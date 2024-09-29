@@ -107,7 +107,9 @@ const updateBoard = async (req, res) => {
 
   const board = await Board.findByPk(boardId);
 
-  console.log(board)
+  if (!board) {
+    throw new NotFoundError(`No board with id ${boardId}`);
+  }
 
   // Store the old data
   const oldData = {
@@ -163,18 +165,18 @@ const updateBoard = async (req, res) => {
 };
 
 const deleteBoard = async (req, res) => {
-  const boarId = req.params.id;
+  const boardId = req.params.id;
 
   const board = await Board.destroy({
     where: {
-      id: boarId
+      id: boardId
     }
   });
   if (!board) {
-    throw new NotFoundError(`No board with id ${boarId}`);
+    throw new NotFoundError(`No board with id ${boardId}`);
   }
 
-  res.status(StatusCodes.OK).json({ msg: `Success delete board ${boarId}` });
+  res.status(StatusCodes.OK).json({ msg: `Success delete board ${boardId}` });
 };
 module.exports = {
   getAllBoards,
