@@ -38,7 +38,7 @@ const errorHandlerMiddleware = (err, req, res, next) => {
     customError.msg = err.errors[0].message;
     if (customError.msg.slice(-4) === "null") {
       customError.msg = customError.msg.replace(/\./g, " ");
-      console.log(customError.msg);
+      // console.log(customError.msg);
     }
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
@@ -65,6 +65,8 @@ const errorHandlerMiddleware = (err, req, res, next) => {
 
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
+
+  // console.log(err)
 
   return res.status(customError.statusCode).json({ msg: customError.msg });
 };

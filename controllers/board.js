@@ -149,8 +149,9 @@ const updateBoard = async (req, res) => {
   board.ip_address = ip_address;
   board.image = image;
 
-  const respond = await board.save();
+  const response = await board.save();
 
+  if(response){
   res.status(StatusCodes.OK).json({
     board: {
       boardId: boardId,
@@ -162,6 +163,9 @@ const updateBoard = async (req, res) => {
       userId: userId
     }
   });
+  }else{
+    throw new BadRequestError("Unable to update this board. Try again later."); 
+  }
 };
 
 const deleteBoard = async (req, res) => {

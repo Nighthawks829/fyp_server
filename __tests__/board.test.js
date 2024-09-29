@@ -1,10 +1,10 @@
 const request = require("supertest");
-const app = require("../app");
-const { sequelize } = require("../models/Boards");
-const Board = require("../models/Boards");
+const sequelize = require("../db/connect");
+const path = require("path");
 const User = require("../models/Users");
-const jwt = require("jsonwebtoken");
-require("dotenv").config();
+const Board = require("../models/Boards");
+const app = require("../app");
+
 const testAdminId = "testBoardAdminId";
 const testAdminName = "Test Admin";
 const testAdminEmail = "testBoardAdmin@gmail.com";
@@ -26,301 +26,609 @@ const testBoardLocation = "testBoardLocation";
 const testBoardIpAddress = "1.1.1.1";
 const testBoardImage = "testBoardImage";
 
-beforeAll(async () => {
-  // Create test admin
-  await User.create({
-    id: testAdminId,
-    name: testAdminName,
-    email: testAdminEmail,
-    password: testAdminPassword,
-    role: testAdminRole,
-    image: testAdminImage,
-  });
+// New test board configuration
+const newBoard = {
+  userId: testAdminId,
+  name: "Test board",
+  type: "Test type",
+  location: "Test location",
+  ip_address: "2.2.2.2",
+};
 
-  //   // Create test user 1
-  await User.create({
-    id: testUserId,
-    name: testUserName,
-    email: testUserEmail,
-    password: testUserPassword,
-    role: testUserRole,
-    image: testUserImage,
-  });
+const newBoardImage = "testBoardImage.jpeg";
 
-  await Board.create({
-    id: testBoardId,
-    userId: testAdminId,
-    name: testBoardName,
-    type: testBoardType,
-    location: testBoardLocation,
-    ip_address: testBoardIpAddress,
-    image: testBoardImage,
-  });
+// Path to the test image file
+const testImagePath = path.join(__dirname, "assets", newBoardImage);
+const newBoardInvalidImage = "empty.mp3";
 
-  const response = await request(app).post("/api/v1/auth/login").send({
-    email: testAdminEmail,
-    password: testAdminPassword,
-  });
+// Path to the test image file
+const testInvalidImagePath = path.join(
+  __dirname,
+  "assets",
+  newBoardInvalidImage
+);
 
-  token = response.body.token;
+// Updated board configuration
+const updatedBoard = {
+  userId: testAdminId, // board userId did not update
+  name: "Update board",
+  type: "Update type",
+  location: "Update location",
+  ip_address: "2.2.2.3",
+};
 
-  await sequelize.sync();
-});
+const updateBoardImage = "testBoardImage2.jpeg";
 
-afterAll(async () => {
-  await Board.destroy({
-    where: {
-      id: testBoardId,
-    },
-  });
+// Path to the test image file
+const testUpdateImagePath = path.join(__dirname, "assets", updateBoardImage);
 
-  await User.destroy({
-    where: {
+const updateBoardInvalidImage = "empty.mp3";
+
+// Path to the test image file
+const testUpdatetInvalidImagePath = path.join(
+  __dirname,
+  "assets",
+  updateBoardInvalidImage
+);
+
+const nonExistentBoardId = "nonExistBoardId";
+
+const existedIPAddress = "1.1.1.1";
+
+let adminToken = "";
+let userToken = "";
+
+describe("Board API", () => {
+  beforeAll(async () => {
+    // Create test admin
+    await User.create({
       id: testAdminId,
-    },
-  });
+      name: testAdminName,
+      email: testAdminEmail,
+      password: testAdminPassword,
+      role: testAdminRole,
+      image: testAdminImage,
+    });
 
-  await User.destroy({
-    where: {
+    // Create test user
+    await User.create({
       id: testUserId,
-    },
-  });
+      name: testUserName,
+      email: testUserEmail,
+      password: testUserPassword,
+      role: testUserRole,
+      image: testUserImage,
+    });
 
-  await sequelize.close();
-});
-
-describe("Boards API", () => {
-  it("should get all boards", async () => {
-    const res = await request(app)
-      .get("/api/v1/board") 
-      .set("Authorization", `Bearer ${token}`); 
-
-    expect(res.statusCode).toEqual(200);
-    expect(res.body).toHaveProperty("boards");
-    expect(res.body).toHaveProperty("count");
-    expect(res.body.boards[0]).toHaveProperty("id");
-    expect(res.body.boards[0]).toHaveProperty("userId");
-    expect(res.body.boards[0]).toHaveProperty("name");
-    expect(res.body.boards[0]).toHaveProperty("type");
-    expect(res.body.boards[0]).toHaveProperty("location");
-    expect(res.body.boards[0]).toHaveProperty("ip_address");
-    expect(res.body.boards[0]).toHaveProperty("image");
-  });
-
-  it("should get a board", async () => {
-    const res = await request(app)
-      .get(`/api/v1/board/${testBoardId}`)
-      .set("Authorization", `Bearer ${token}`);
-    expect(res.statusCode).toEqual(200);
-    expect(res.body.board).toHaveProperty("boardId");
-    expect(res.body.board).toHaveProperty("userId");
-    expect(res.body.board).toHaveProperty("name");
-    expect(res.body.board).toHaveProperty("type");
-    expect(res.body.board).toHaveProperty("location");
-    expect(res.body.board).toHaveProperty("ip_address");
-    expect(res.body.board).toHaveProperty("image");
-  });
-
-  it("should throw an error if board not found when get board", async () => {
-    const nonExistentBoardId = "nonExistentBoardId";
-
-    const res = await request(app)
-      .get(`/api/v1/board/${nonExistentBoardId}`)
-      .set("Authorization", `Bearer ${token}`);
-
-    expect(res.statusCode).toEqual(404);
-    expect(res.body).toHaveProperty(
-      "msg",
-      `No board with id ${nonExistentBoardId}`
-    );
-  });
-
-  it("should add a new board", async () => {
-    // New test board configuration
-    const newBoard = {
+    // Create test board
+    await Board.create({
+      id: testBoardId,
       userId: testAdminId,
-      name: "Test board",
-      type: "Test type",
-      location: "Test location",
-      ip_address: "2.2.2.2",
-      image: "test image",
-    };
+      name: testBoardName,
+      type: testBoardType,
+      location: testBoardLocation,
+      ip_address: testBoardIpAddress,
+      image: testBoardImage,
+    });
 
-    const res = await request(app)
-      .post("/api/v1/board")
-      .set("Authorization", `Bearer ${token}`)
-      .send(newBoard);
+    // Sign in admin and get admin token
+    const adminResponse = await request(app).post("/api/v1/auth/login").send({
+      email: testAdminEmail,
+      password: testAdminPassword,
+    });
 
-    expect(res.statusCode).toEqual(201);
-    expect(res.body.board).toHaveProperty("boardId", res.body.board.boardId);
-    expect(res.body.board).toHaveProperty("userId", testAdminId);
-    expect(res.body.board).toHaveProperty("name", newBoard.name);
-    expect(res.body.board).toHaveProperty("type", newBoard.type);
-    expect(res.body.board).toHaveProperty("location", newBoard.location);
-    expect(res.body.board).toHaveProperty("ip_address", newBoard.ip_address);
-    expect(res.body.board).toHaveProperty("image", newBoard.image);
- 
-    // Delete the test board after test
-    Board.destroy({
+    adminToken = adminResponse.body.token;
+
+    // Sign in as user and get user token
+    const userResponse = await request(app).post("/api/v1/auth/login").send({
+      email: testUserEmail,
+      password: testUserPassword,
+    });
+
+    userToken = userResponse.body.token;
+
+    // Sync the database before running test
+    await sequelize.sync();
+  });
+
+  afterAll(async () => {
+    await Board.destroy({
       where: {
-        id: res.body.board.boardId,
+        id: testBoardId,
       },
+    });
+
+    await User.destroy({
+      where: {
+        id: testAdminId,
+      },
+    });
+
+    await User.destroy({
+      where: {
+        id: testUserId,
+      },
+    });
+
+    // await sequelize.sync();
+
+    await sequelize.close();
+  });
+
+  describe("Get all board route", () => {
+    describe("Given the board is exist and user is admin", () => {
+      it("should return 200 and get list of all boards and list length", async () => {
+        const res = await request(app)
+          .get("/api/v1/board")
+          .set("Authorization", `Bearer ${adminToken}`);
+        expect(res.statusCode).toEqual(200);
+        expect(res.body).toHaveProperty("boards");
+        expect(res.body).toHaveProperty("count");
+        expect(res.body.boards[0]).toHaveProperty("id");
+        expect(res.body.boards[0]).toHaveProperty("userId");
+        expect(res.body.boards[0]).toHaveProperty("name");
+        expect(res.body.boards[0]).toHaveProperty("type");
+        expect(res.body.boards[0]).toHaveProperty("location");
+        expect(res.body.boards[0]).toHaveProperty("ip_address");
+        expect(res.body.boards[0]).toHaveProperty("image");
+      });
+    });
+    describe("Given the board is exist and user is normal user", () => {
+      it("should return 200 and list of all boards and list length", async () => {
+        const res = await request(app)
+          .get("/api/v1/board")
+          .set("Authorization", `Bearer ${userToken}`);
+        expect(res.statusCode).toEqual(200);
+        expect(res.body).toHaveProperty("boards");
+        expect(res.body).toHaveProperty("count");
+        expect(res.body.boards[0]).toHaveProperty("id");
+        expect(res.body.boards[0]).toHaveProperty("userId");
+        expect(res.body.boards[0]).toHaveProperty("name");
+        expect(res.body.boards[0]).toHaveProperty("type");
+        expect(res.body.boards[0]).toHaveProperty("location");
+        expect(res.body.boards[0]).toHaveProperty("ip_address");
+        expect(res.body.boards[0]).toHaveProperty("image");
+      });
     });
   });
 
-  it("should throw an error if user role is not admin when add board", async () => {
-    // New test board configuration
-    const newBoard = {
-      userId: testAdminId,
-      name: "Test board",
-      type: "Test type",
-      location: "Test location",
-      ip_address: "2.2.2.2",
-      image: "Test image",
-    };
+  describe("Get board with id route", () => {
+    describe("Given the board exist, valid boardId and user is admin", () => {
+      it("should return a 200 and board payload", async () => {
+        const res = await request(app)
+          .get(`/api/v1/board/${testBoardId}`)
+          .set("Authorization", `Bearer ${adminToken}`);
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.board).toHaveProperty("boardId", testBoardId);
+        expect(res.body.board).toHaveProperty("userId", testAdminId);
+        expect(res.body.board).toHaveProperty("name", testBoardName);
+        expect(res.body.board).toHaveProperty("type", testBoardType);
+        expect(res.body.board).toHaveProperty("location", testBoardLocation);
+        expect(res.body.board).toHaveProperty("ip_address", testBoardIpAddress);
+        expect(res.body.board).toHaveProperty("image", testBoardImage);
+      });
+    });
 
-    const userToken = jwt.sign(
-      {
-        userId: testUserId,
-        name: testUserName,
-        email: testUserEmail,
-        role: testUserRole,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    describe("Given the board exist, valid boardId and user is normal user", () => {
+      it("should return a 200 and board payload", async () => {
+        const res = await request(app)
+          .get(`/api/v1/board/${testBoardId}`)
+          .set("Authorization", `Bearer ${userToken}`);
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.board).toHaveProperty("boardId", testBoardId);
+        expect(res.body.board).toHaveProperty("userId", testAdminId);
+        expect(res.body.board).toHaveProperty("name", testBoardName);
+        expect(res.body.board).toHaveProperty("type", testBoardType);
+        expect(res.body.board).toHaveProperty("location", testBoardLocation);
+        expect(res.body.board).toHaveProperty("ip_address", testBoardIpAddress);
+        expect(res.body.board).toHaveProperty("image", testBoardImage);
+      });
+    });
 
-    const res = await request(app)
-      .post("/api/v1/board")
-      .set("Authorization", `Bearer ${userToken}`)
-      .send(newBoard);
+    describe("Given the board is not found", () => {
+      it("should return a 404 and not found error message", async () => {
+        const nonExistentBoardId = "nonExistentBoardId";
 
-    expect(res.statusCode).toEqual(401);
-    expect(res.body).toHaveProperty("msg", "Authentication Invalid");
+        const res = await request(app)
+          .get(`/api/v1/board/${nonExistentBoardId}`)
+          .set("Authorization", `Bearer ${adminToken}`);
+
+        expect(res.statusCode).toEqual(404);
+        expect(res.body).toHaveProperty(
+          "msg",
+          `No board with id ${nonExistentBoardId}`
+        );
+      });
+    });
   });
 
-  it("should update a board", async () => {
-    // Updated board configuration
-    const updatedBoard = {
-      userId: testAdminId,      // board userId did not update
-      name: "Update board",
-      type: "Update type",
-      location: "Update location",
-      ip_address: "2.2.2.3",
-      image: "Update image",
-    };
+  describe("Add board route", () => {
+    describe("Given the new board payload is valid and user is admin", () => {
+      it("should return a 201 and board payload", async () => {
+        const res = await request(app)
+          .post("/api/v1/board")
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("userId", newBoard.userId)
+          .field("name", newBoard.name)
+          .field("type", newBoard.type)
+          .field("location", newBoard.location)
+          .field("ip_address", newBoard.ip_address)
+          .attach("image", testImagePath);
 
-    const res = await request(app)
-      .patch(`/api/v1/board/${testBoardId}`)
-      .set("Authorization", `Bearer ${token}`)
-      .send(updatedBoard);
+        expect(res.statusCode).toEqual(201);
+        expect(res.body.board).toHaveProperty(
+          "boardId",
+          res.body.board.boardId
+        );
+        expect(res.body.board).toHaveProperty("userId", testAdminId);
+        expect(res.body.board).toHaveProperty("name", newBoard.name);
+        expect(res.body.board).toHaveProperty("type", newBoard.type);
+        expect(res.body.board).toHaveProperty("location", newBoard.location);
+        expect(res.body.board).toHaveProperty(
+          "ip_address",
+          newBoard.ip_address
+        );
+        expect(res.body.board).toHaveProperty("image", newBoardImage);
 
-    expect(res.status).toEqual(200);
-    expect(res.body.board).toHaveProperty("boardId", testBoardId);
-    expect(res.body.board).toHaveProperty("userId", testAdminId);
-    expect(res.body.board).toHaveProperty("name", updatedBoard.name);
-    expect(res.body.board).toHaveProperty("type", updatedBoard.type);
-    expect(res.body.board).toHaveProperty("location", updatedBoard.location);
-    expect(res.body.board).toHaveProperty("ip_address", updatedBoard.ip_address);
-    expect(res.body.board).toHaveProperty("image", updatedBoard.image);
+        // Delete the add test board after test
+        Board.destroy({
+          where: {
+            id: res.body.board.boardId,
+          },
+        });
+      });
+    });
+
+    describe("Given the new board payload is valid and user is normal user", () => {
+      it("should return a 401 and authentication invalid error message", async () => {
+        const res = await request(app)
+          .post("/api/v1/board")
+          .set("Authorization", `Bearer ${userToken}`)
+          .field("userId", newBoard.userId)
+          .field("name", newBoard.name)
+          .field("type", newBoard.type)
+          .field("location", newBoard.location)
+          .field("ip_address", newBoard.ip_address)
+          .attach("image", testImagePath);
+
+        expect(res.statusCode).toEqual(401);
+        expect(res.body).toHaveProperty("msg", "Authentication Invalid");
+      });
+    });
+
+    describe("Given the board image is invalid", () => {
+      it("should return a 400 and invalid image type message", async () => {
+        const res = await request(app)
+          .post("/api/v1/board")
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("userId", newBoard.userId)
+          .field("name", newBoard.name)
+          .field("type", newBoard.type)
+          .field("location", newBoard.location)
+          .field("ip_address", newBoard.ip_address)
+          .attach("image", testInvalidImagePath);
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty(
+          "msg",
+          "Invalid file type. Only image files are allowed"
+        );
+      });
+    });
+
+    describe("Given the userId field is missing", () => {
+      it("should return a 400 and null error message", async () => {
+        const res = await request(app)
+          .post("/api/v1/board")
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("name", newBoard.name)
+          .field("type", newBoard.type)
+          .field("location", newBoard.location)
+          .field("ip_address", newBoard.ip_address)
+          .attach("image", testImagePath);
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty("msg", "Boards userId cannot be null");
+      });
+    });
+
+    describe("Given the name field is missing", () => {
+      it("should return a 400 and null error message", async () => {
+        const res = await request(app)
+          .post("/api/v1/board")
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("userId", newBoard.userId)
+          .field("type", newBoard.type)
+          .field("location", newBoard.location)
+          .field("ip_address", newBoard.ip_address)
+          .attach("image", testImagePath);
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty("msg", "Boards name cannot be null");
+      });
+    });
+
+    describe("Given the type field is missing", () => {
+      it("should return a 400 and null error message", async () => {
+        const res = await request(app)
+          .post("/api/v1/board")
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("userId", newBoard.userId)
+          .field("name", newBoard.name)
+          .field("location", newBoard.location)
+          .field("ip_address", newBoard.ip_address)
+          .attach("image", testImagePath);
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty("msg", "Boards type cannot be null");
+      });
+    });
+
+    describe("Given the location field is missing", () => {
+      it("should return a 400 and null error message", async () => {
+        const res = await request(app)
+          .post("/api/v1/board")
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("userId", newBoard.userId)
+          .field("name", newBoard.name)
+          .field("type", newBoard.type)
+          .field("ip_address", newBoard.ip_address)
+          .attach("image", testImagePath);
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty(
+          "msg",
+          "Boards location cannot be null"
+        );
+      });
+    });
+
+    describe("Given the IP Address field is missing", () => {
+      it("should return a 400 and null error message", async () => {
+        const res = await request(app)
+          .post("/api/v1/board")
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("userId", newBoard.userId)
+          .field("name", newBoard.name)
+          .field("type", newBoard.type)
+          .field("location", newBoard.location)
+          .attach("image", testImagePath);
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty(
+          "msg",
+          "Boards ip_address cannot be null"
+        );
+      });
+    });
+
+    describe("Given the board IP address is existed", () => {
+      it("should return a 400 and not unique error message", async () => {
+        const res = await request(app)
+          .post("/api/v1/board")
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("userId", newBoard.userId)
+          .field("name", newBoard.name)
+          .field("type", newBoard.type)
+          .field("location", newBoard.location)
+          .field("ip_address", existedIPAddress)
+          .attach("image", testImagePath);
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty("msg", "IP address must be unique");
+      });
+    });
   });
 
-  it("should throw an error if not all values are provided when update board", async () => {
-    const incompleteBoard = {
-      userId: testAdminId, // board userId did not update
-      // name is missing
-      type: "Update type",
-      location: "Update location",
-      ip_address: "2.2.2.3",
-      image: "Update image",
-    };
+  describe("Update board route", () => {
+    describe("Given the update board payload is valid and user is admin", () => {
+      it("should return a 200 and board payload", async () => {
+        const res = await request(app)
+          .patch(`/api/v1/board/${testBoardId}`)
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("userId", updatedBoard.userId)
+          .field("name", updatedBoard.name)
+          .field("type", updatedBoard.type)
+          .field("location", updatedBoard.location)
+          .field("ip_address", updatedBoard.ip_address)
+          .attach("image", testUpdateImagePath);
 
-    const res = await request(app)
-      .patch(`/api/v1/board/${testBoardId}`)
-      .set("Authorization", `Bearer ${token}`)
-      .send(incompleteBoard);
+        expect(res.status).toEqual(200);
+        expect(res.body.board).toHaveProperty("boardId", testBoardId);
+        expect(res.body.board).toHaveProperty("userId", testAdminId);
+        expect(res.body.board).toHaveProperty("name", updatedBoard.name);
+        expect(res.body.board).toHaveProperty("type", updatedBoard.type);
+        expect(res.body.board).toHaveProperty(
+          "location",
+          updatedBoard.location
+        );
+        expect(res.body.board).toHaveProperty(
+          "ip_address",
+          updatedBoard.ip_address
+        );
+        expect(res.body.board).toHaveProperty("image", updateBoardImage);
+      });
+    });
 
-    expect(res.statusCode).toEqual(400);
-    expect(res.body).toHaveProperty("msg", "Please provide all values");
+    describe("Given the update board payload is valid and user is normal user", () => {
+      it("should return a 401 and authentication invalid error message", async () => {
+        const res = await request(app)
+          .patch(`/api/v1/board/${testBoardId}`)
+          .set("Authorization", `Bearer ${userToken}`)
+          .field("userId", updatedBoard.userId)
+          .field("name", updatedBoard.name)
+          .field("type", updatedBoard.type)
+          .field("location", updatedBoard.location)
+          .field("ip_address", updatedBoard.ip_address)
+          .attach("image", testUpdateImagePath);
+
+        expect(res.statusCode).toEqual(401);
+        expect(res.body).toHaveProperty("msg", "Authentication Invalid");
+      });
+    });
+
+    describe("Given the board image is invalid", () => {
+      it("should return a 400 and invalid image type message", async () => {
+        const res = await request(app)
+          .patch(`/api/v1/board/${testBoardId}`)
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("userId", updatedBoard.userId)
+          .field("name", updatedBoard.name)
+          .field("type", updatedBoard.type)
+          .field("location", updatedBoard.location)
+          .field("ip_address", updatedBoard.ip_address)
+          .attach("image", testUpdatetInvalidImagePath);
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty(
+          "msg",
+          "Invalid file type. Only image files are allowed"
+        );
+      });
+    });
+
+    describe("Given the update board is not found", () => {
+      it("should return a 404 and not found error message", async () => {
+        const res = await request(app)
+          .patch(`/api/v1/board/${nonExistentBoardId}`)
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("userId", updatedBoard.userId)
+          .field("name", updatedBoard.name)
+          .field("type", updatedBoard.type)
+          .field("location", updatedBoard.location)
+          .field("ip_address", updatedBoard.ip_address)
+          .attach("image", testUpdateImagePath);
+        expect(res.statusCode).toEqual(404);
+        expect(res.body).toHaveProperty(
+          "msg",
+          `No board with id ${nonExistentBoardId}`
+        );
+      });
+    });
+
+    describe("Given the userId field is missing", () => {
+      it("should return a 400 and null error message", async () => {
+        const res = await request(app)
+          .patch(`/api/v1/board/${testBoardId}`)
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("name", updatedBoard.name)
+          .field("type", updatedBoard.type)
+          .field("location", updatedBoard.location)
+          .field("ip_address", updatedBoard.ip_address)
+          .attach("image", testUpdateImagePath);
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty("msg", "Please provide all values");
+      });
+    });
+
+    describe("Given the name field is missing", () => {
+      it("should return a 400 and null error message", async () => {
+        const res = await request(app)
+          .patch(`/api/v1/board/${testBoardId}`)
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("userId", updatedBoard.userId)
+          .field("type", updatedBoard.type)
+          .field("location", updatedBoard.location)
+          .field("ip_address", updatedBoard.ip_address)
+          .attach("image", testUpdateImagePath);
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty("msg", "Please provide all values");
+      });
+    });
+
+    describe("Given the type field is missing", () => {
+      it("should return a 400 and null error message", async () => {
+        const res = await request(app)
+          .patch(`/api/v1/board/${testBoardId}`)
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("userId", updatedBoard.userId)
+          .field("name", updatedBoard.name)
+          .field("location", updatedBoard.location)
+          .field("ip_address", updatedBoard.ip_address)
+          .attach("image", testUpdateImagePath);
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty("msg", "Please provide all values");
+      });
+    });
+
+    describe("Given the location field is missing", () => {
+      it("should return a 400 and null error message", async () => {
+        const res = await request(app)
+          .patch(`/api/v1/board/${testBoardId}`)
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("userId", updatedBoard.userId)
+          .field("name", updatedBoard.name)
+          .field("type", updatedBoard.type)
+          .field("ip_address", updatedBoard.ip_address)
+          .attach("image", testUpdateImagePath);
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty("msg", "Please provide all values");
+      });
+    });
+
+    describe("Given the IP Address field is missing", () => {
+      it("should return a 400 and null error message", async () => {
+        const res = await request(app)
+          .patch(`/api/v1/board/${testBoardId}`)
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("userId", updatedBoard.userId)
+          .field("name", updatedBoard.name)
+          .field("type", updatedBoard.type)
+          .field("location", updatedBoard.location)
+          .attach("image", testUpdateImagePath);
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty("msg", "Please provide all values");
+      });
+    });
   });
 
-  it("should throw an error if user role is not admin when update user", async () => {
-    const updatedBoard = {
-      userId: testAdminId,
-      name: "Update board",
-      type: "Update type",
-      location: "Update location",
-      ip_address: "2.2.2.3",
-      image: "Update image",
-    };
+  describe("Delete board route", () => {
+    describe("Given the user is admin", () => {
+      it("should return a 200 and successfult delete message", async () => {
+        const res = await request(app)
+          .delete(`/api/v1/board/${testBoardId}`)
+          .set("Authorization", `Bearer ${adminToken}`);
 
-    const userToken = jwt.sign(
-      {
-        userId: testUserId,
-        name: testUserName,
-        email: testUserEmail,
-        role: testUserRole,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+        expect(res.statusCode).toEqual(200);
+        expect(res.body).toHaveProperty(
+          "msg",
+          `Success delete board ${testBoardId}`
+        );
 
-    const res = await request(app)
-      .patch(`/api/v1/board/${testBoardId}`)
-      .set("Authotization", `Bearer ${userToken}`)
-      .send(updatedBoard);
+        // Verify board is deleted
+        const board = await Board.findByPk(testBoardId);
+        expect(board).toBeNull();
+      });
+    });
 
-    expect(res.statusCode).toEqual(401);
-    expect(res.body).toHaveProperty("msg", "Authentication Invalid");
-  });
+    describe("Given the user is normal user", () => {
+      it("shoudl return a 401 and authentication invalid error message", async () => {
+        const res = await request(app)
+          .delete(`/api/v1/board/${testBoardId}`)
+          .set("Authorization", `Bearer ${userToken}`);
 
-  it("should delete a board", async () => {
-    const res = await request(app)
-      .delete(`/api/v1/board/${testBoardId}`)
-      .set("Authorization", `Bearer ${token}`);
+        expect(res.statusCode).toEqual(401);
+        expect(res.body).toHaveProperty("msg", "Authentication Invalid");
+      });
+    });
 
-    expect(res.statusCode).toEqual(200);
-    expect(res.body).toHaveProperty(
-      "msg",
-      `Success delete board ${testBoardId}`
-    );
+    describe("Given the delete board is not found", () => {
+      it("should return a 404 and not found error message", async () => {
+        const res = await request(app)
+          .delete(`/api/v1/board/${nonExistentBoardId}`)
+          .set("Authorization", `Bearer ${adminToken}`);
 
-    // Verify board is deleted
-    const board = await Board.findByPk(testBoardId);
-    expect(board).toBeNull();
-  });
-
-  it("should throw an error if borad not found when delete board", async () => {
-    const nonExistentBoardId = "nonExistBoardId";
-
-    const res = await request(app)
-      .delete(`/api/v1/board/${nonExistentBoardId}`)
-      .set("Authorization", `Bearer ${token}`);
-
-    expect(res.statusCode).toEqual(404);
-    expect(res.body).toHaveProperty(
-      "msg",
-      `No board with id ${nonExistentBoardId}`
-    );
-  });
-
-  it("should throw an error if user role is not admin when delete board", async () => {
-    const userToken = jwt.sign(
-      {
-        userId: testUserId,
-        name: testUserName,
-        email: testUserEmail,
-        role: testUserRole,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-    const res = await request(app)
-      .delete(`/api/v1/board/${testBoardId}`)
-      .set("Authorization", `Bearer ${userToken}`);
-
-    expect(res.statusCode).toEqual(401);
-    expect(res.body).toHaveProperty("msg", "Authentication Invalid");
+        expect(res.statusCode).toEqual(404);
+        expect(res.body).toHaveProperty(
+          "msg",
+          `No board with id ${nonExistentBoardId}`
+        );
+      });
+    });
   });
 });
-
