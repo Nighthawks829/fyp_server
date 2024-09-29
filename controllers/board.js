@@ -1,6 +1,7 @@
 const { BoardSchema, SensorSchema } = require("../models/associations");
 const { StatusCodes } = require("http-status-codes");
 const { NotFoundError, BadRequestError } = require("../errors");
+const path = require("path");
 
 // Rename BoardSchema to Board
 const Board = BoardSchema;
@@ -16,9 +17,9 @@ const getBoard = async (req, res) => {
     include: [
       {
         model: SensorSchema,
-        as: "sensors",
-      },
-    ],
+        as: "sensors"
+      }
+    ]
   });
 
   if (board) {
@@ -31,8 +32,8 @@ const getBoard = async (req, res) => {
         ip_address: board.ip_address,
         image: board.image,
         userId: board.userId,
-        sensors: board.sensors,
-      },
+        sensors: board.sensors
+      }
     });
   } else {
     throw new NotFoundError(`No board with id ${req.params.id}`);
@@ -45,6 +46,15 @@ const addBoard = async (req, res) => {
 
   if (req.files && req.files.image) {
     const file = req.files.image;
+
+    const allowedExtensions = [".jpg", ".jpeg", ".png"];
+    const fileExtension = path.extname(file.name).toLowerCase();
+    if (!allowedExtensions.includes(fileExtension)) {
+      throw new BadRequestError(
+        "Invalid file type. Only image files are allowed"
+      );
+    }
+
     image = file.name;
     const uploadPath = `${__dirname}/../../client/public/uploads/${file.name}`;
 
@@ -64,7 +74,7 @@ const addBoard = async (req, res) => {
     location: location,
     ip_address: ip_address,
     image: image,
-    userId: userId,
+    userId: userId
   });
 
   if (board) {
@@ -76,8 +86,8 @@ const addBoard = async (req, res) => {
         location: location,
         ip_address: ip_address,
         image: board.image,
-        userId: userId,
-      },
+        userId: userId
+      }
     });
   } else {
     throw new BadRequestError("Unable to create new board. Try again later.");
@@ -87,7 +97,7 @@ const addBoard = async (req, res) => {
 const updateBoard = async (req, res) => {
   const {
     body: { name, type, location, ip_address, userId },
-    params: { id: boardId },
+    params: { id: boardId }
   } = req;
   let image = "";
 
@@ -97,17 +107,28 @@ const updateBoard = async (req, res) => {
 
   const board = await Board.findByPk(boardId);
 
+  console.log(board)
+
   // Store the old data
   const oldData = {
     name: board.name,
     type: board.type,
     location: board.location,
     ip_address: board.ip_address,
-    image: board.image,
+    image: board.image
   };
 
   if (req.files && req.files.image) {
     const file = req.files.image;
+
+    const allowedExtensions = [".jpg", ".jpeg", ".png"];
+    const fileExtension = path.extname(file.name).toLowerCase();
+    if (!allowedExtensions.includes(fileExtension)) {
+      throw new BadRequestError(
+        "Invalid file type. Only image files are allowed"
+      );
+    }
+
     image = file.name;
     const uploadPath = `${__dirname}/../../client/public/uploads/${file.name}`;
     file.mv(uploadPath, (error) => {
@@ -136,8 +157,8 @@ const updateBoard = async (req, res) => {
       location: board.location,
       ip_address: board.ip_address,
       image: board.image,
-      userId: userId,
-    },
+      userId: userId
+    }
   });
 };
 
@@ -146,8 +167,8 @@ const deleteBoard = async (req, res) => {
 
   const board = await Board.destroy({
     where: {
-      id: boarId,
-    },
+      id: boarId
+    }
   });
   if (!board) {
     throw new NotFoundError(`No board with id ${boarId}`);
@@ -160,5 +181,5 @@ module.exports = {
   getBoard,
   addBoard,
   updateBoard,
-  deleteBoard,
+  deleteBoard
 };
