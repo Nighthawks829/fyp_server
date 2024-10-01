@@ -3,10 +3,10 @@ const {
   UserSchema,
   DashboardSchema,
   NotificationSchema,
-  SensorControlsSchema,
+  SensorControlsSchema
 } = require("../models/associations");
 const { StatusCodes } = require("http-status-codes");
-const { BadRequestError, NotFoundError } = require("../errors");
+const { BadRequestError, NotFoundError, ForbiddenError } = require("../errors");
 const bcrypt = require("bcrypt");
 
 const User = UserSchema;
@@ -34,7 +34,7 @@ const addUser = async (req, res) => {
     email,
     password,
     role,
-    image,
+    image
   });
 
   const token = user.generateJWT();
@@ -45,9 +45,9 @@ const addUser = async (req, res) => {
         name,
         email,
         role,
-        image: user.image,
+        image: user.image
       },
-      token,
+      token
     });
   } else {
     throw new BadRequestError("Unable to create new user. Try again later.");
@@ -61,6 +61,10 @@ const getAllUsers = async (req, res) => {
 };
 
 const getUser = async (req, res) => {
+  if (req.user.userId !== req.params.id && req.user.role === "user") {
+    throw new ForbiddenError("No allow to get other user profile");
+  }
+
   const user = await User.findByPk(req.params.id);
 
   if (user) {
@@ -70,8 +74,8 @@ const getUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        image: user.image,
-      },
+        image: user.image
+      }
     });
   } else {
     throw new NotFoundError(`No user with id ${req.params.id}`);
@@ -178,7 +182,7 @@ const updateUser = async (req, res) => {
   const {
     body: { name, email, password, role },
     params: { id: userId },
-    user: { userId: ownId },
+    user: { userId: ownId }
   } = req;
 
   if (!name || !email || !password || !role) {
@@ -195,7 +199,7 @@ const updateUser = async (req, res) => {
     email: user.email,
     name: user.name,
     role: user.role,
-    image: user.image,
+    image: user.image
   };
 
   const isPasswordSame = await bcrypt.compare(password, user.password);
@@ -232,7 +236,7 @@ const updateUser = async (req, res) => {
         email: user.email,
         name: user.name,
         role: user.role,
-        image: user.image,
+        image: user.image
       }) ||
       !isPasswordSame)
   ) {
@@ -242,7 +246,7 @@ const updateUser = async (req, res) => {
       httpOnly: true,
       secure: false, // Use secure cookies in production
       sameSite: "strict",
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
     });
 
     res.status(StatusCodes.OK).json({
@@ -252,9 +256,9 @@ const updateUser = async (req, res) => {
         name: name,
         password: password,
         role: role,
-        image: user.image,
+        image: user.image
       },
-      token: token,
+      token: token
     });
   }
   // Admin update other user profile and did not generate new token
@@ -266,8 +270,8 @@ const updateUser = async (req, res) => {
         name: name,
         password: password,
         role: role,
-        image: user.image,
-      },
+        image: user.image
+      }
     });
   }
 };
@@ -275,8 +279,8 @@ const updateUser = async (req, res) => {
 const deleteUser = async (req, res) => {
   const user = await User.destroy({
     where: {
-      id: req.params.id,
-    },
+      id: req.params.id
+    }
   });
   if (!user) {
     throw new NotFoundError(`No user with id ${req.params.id}`);
@@ -292,9 +296,9 @@ const getUserWithBoards = async (req, res) => {
     include: [
       {
         model: BoardSchema,
-        as: "boards",
-      },
-    ],
+        as: "boards"
+      }
+    ]
   });
 
   if (user) {
@@ -305,8 +309,8 @@ const getUserWithBoards = async (req, res) => {
         email: user.email,
         role: user.role,
         image: user.image,
-        boards: user.boards,
-      },
+        boards: user.boards
+      }
     });
   } else {
     throw new NotFoundError(`No user with id ${req.params.id}`);
@@ -318,9 +322,9 @@ const getUserWithDashboards = async (req, res) => {
     include: [
       {
         model: DashboardSchema,
-        as: "dashboards",
-      },
-    ],
+        as: "dashboards"
+      }
+    ]
   });
 
   if (user) {
@@ -331,8 +335,8 @@ const getUserWithDashboards = async (req, res) => {
         email: user.email,
         role: user.role,
         image: user.image,
-        dashboards: user.dashboards,
-      },
+        dashboards: user.dashboards
+      }
     });
   } else {
     throw new NotFoundError(`No user with id ${req.params.id}`);
@@ -344,9 +348,9 @@ const getUserWithNotifications = async (req, res) => {
     include: [
       {
         model: NotificationSchema,
-        as: "notifications",
-      },
-    ],
+        as: "notifications"
+      }
+    ]
   });
 
   if (user) {
@@ -357,8 +361,8 @@ const getUserWithNotifications = async (req, res) => {
         email: user.email,
         role: user.role,
         image: user.image,
-        notifications: user.notifications,
-      },
+        notifications: user.notifications
+      }
     });
   } else {
     throw new NotFoundError(`No user with id ${req.params.id}`);
@@ -370,9 +374,9 @@ const getUserWithSensorControls = async (req, res) => {
     include: [
       {
         model: SensorControlsSchema,
-        as: "sensorControls",
-      },
-    ],
+        as: "sensorControls"
+      }
+    ]
   });
 
   if (user) {
@@ -383,8 +387,8 @@ const getUserWithSensorControls = async (req, res) => {
         email: user.email,
         role: user.role,
         image: user.image,
-        sensorControls: user.sensorControls,
-      },
+        sensorControls: user.sensorControls
+      }
     });
   } else {
     throw new NotFoundError(`No user with id ${req.params.id}`);
@@ -396,5 +400,5 @@ module.exports = {
   getAllUsers,
   getUser,
   updateUser,
-  deleteUser,
+  deleteUser
 };
