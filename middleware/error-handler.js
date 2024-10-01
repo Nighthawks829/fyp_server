@@ -14,8 +14,12 @@ const errorHandlerMiddleware = (err, req, res, next) => {
     customError.msg = err.errors[0].message;
     customError.msg =
       customError.msg.charAt(0).toUpperCase() + customError.msg.slice(1);
+
     if (customError.msg.slice(0, 10) === "Ip_address") {
       customError.msg = "IP address must be unique";
+    }
+    if (customError.msg.slice(0, 5) === "Email") {
+      customError.msg = "Email address must be unique";
     }
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
