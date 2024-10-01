@@ -31,7 +31,7 @@ router
 router
   .route("/:id")
   .get(authenticateUser, getUser)
-  .patch(authenticateAdmin, updateUser)
+  .patch(authenticateUser, updateUser)
   .delete(authenticateAdmin, deleteUser);
 
 module.exports = router;

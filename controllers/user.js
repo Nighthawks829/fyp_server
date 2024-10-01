@@ -194,6 +194,10 @@ const updateUser = async (req, res) => {
     user: { userId: ownId }
   } = req;
 
+  if (req.user.userId !== req.params.id && req.user.role === "user") {
+    throw new ForbiddenError("No allow to edit other user profile");
+  }
+
   if (!name || !email || !password || !role) {
     throw new BadRequestError("Please provide all values");
   }
