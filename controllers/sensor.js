@@ -4,10 +4,11 @@ const {
   SensorDataSchema,
   DashboardSchema,
   NotificationSchema,
-  BoardSchema,
+  BoardSchema
 } = require("../models/associations");
 const { StatusCodes } = require("http-status-codes");
 const { NotFoundError, BadRequestError } = require("../errors");
+const path = require("path");
 
 const Sensor = SensorSchema;
 
@@ -16,8 +17,8 @@ const getAllSensors = async (req, res) => {
     include: {
       model: BoardSchema,
       as: "board",
-      attributes: ["name"],
-    },
+      attributes: ["name"]
+    }
   });
 
   const formattedSensors = sensors.map((sensor) => ({
@@ -28,7 +29,7 @@ const getAllSensors = async (req, res) => {
     type: sensor.type,
     topic: sensor.topic,
     image: sensor.image,
-    boardName: sensor.board.name, // Include the board name
+    boardName: sensor.board.name // Include the board name
     // Add other sensor attributes as needed
   }));
 
@@ -43,15 +44,15 @@ const getSensor = async (req, res) => {
       {
         model: BoardSchema,
         as: "board",
-        attributes: ["name"],
-      },
-    ],
+        attributes: ["name"]
+      }
+    ]
   });
 
   if (sensor) {
     const latestControl = await SensorDataSchema.findOne({
       where: { sensorId: sensor.id },
-      order: [["createdAt", "ASC"]],
+      order: [["createdAt", "ASC"]]
     });
 
     res.status(StatusCodes.OK).json({
@@ -64,8 +65,8 @@ const getSensor = async (req, res) => {
         topic: sensor.topic,
         image: sensor.image,
         boardName: sensor.board ? sensor.board.name : null,
-        value: latestControl ? latestControl.value : null,
-      },
+        value: latestControl ? latestControl.value : null
+      }
     });
   } else {
     throw new NotFoundError(`No sensor with id ${req.params.id}`);
@@ -78,6 +79,15 @@ const addSensor = async (req, res) => {
 
   if (req.files && req.files.image) {
     const file = req.files.image;
+
+    const allowedExtensions = [".jpg", ".jpeg", ".png"];
+    const fileExtension = path.extname(file.name).toLowerCase();
+    if (!allowedExtensions.includes(fileExtension)) {
+      throw new BadRequestError(
+        "Invalid file type. Only image files are allowed"
+      );
+    }
+
     image = file.name;
     const uploadPath = `${__dirname}/../../client/public/uploads/${file.name}`;
 
@@ -97,7 +107,7 @@ const addSensor = async (req, res) => {
     pin: pin,
     type: type,
     topic: topic,
-    image: image,
+    image: image
   });
 
   if (sensor) {
@@ -109,8 +119,8 @@ const addSensor = async (req, res) => {
         pin: pin,
         type: type,
         topic: topic,
-        image: image,
-      },
+        image: image
+      }
     });
   } else {
     throw new BadRequestError("Unable to creata new sensor. Try again later");
@@ -120,18 +130,31 @@ const addSensor = async (req, res) => {
 const updateSensor = async (req, res) => {
   const {
     body: { boardId, name, pin, type, topic },
-    params: { id: sensorId },
+    params: { id: sensorId }
   } = req;
   let image = "";
-  
+
   if (!boardId || !name || !pin || !type || !topic) {
     throw new BadRequestError("Please provide all values");
   }
 
   const sensor = await Sensor.findByPk(sensorId);
 
+  if (!sensor) {
+    throw new NotFoundError(`No sensor with id ${sensorId}`);
+  }
+
   if (req.files && req.files.image) {
     const file = req.files.image;
+
+    const allowedExtensions = [".jpg", ".jpeg", ".png"];
+    const fileExtension = path.extname(file.name).toLowerCase();
+    if (!allowedExtensions.includes(fileExtension)) {
+      throw new BadRequestError(
+        "Invalid file type. Only image files are allowed"
+      );
+    }
+
     image = file.name;
     const uploadPath = `${__dirname}/../../client/public/uploads/${file.name}`;
     file.mv(uploadPath, (error) => {
@@ -162,8 +185,8 @@ const updateSensor = async (req, res) => {
       pin: sensor.pin,
       type: sensor.type,
       topic: sensor.topic,
-      image: sensor.image,
-    },
+      image: sensor.image
+    }
   });
 };
 
@@ -171,8 +194,8 @@ const deleteSensor = async (req, res) => {
   const sensorId = req.params.id;
   const sensor = await Sensor.destroy({
     where: {
-      id: sensorId,
-    },
+      id: sensorId
+    }
   });
 
   if (!sensor) {
@@ -182,122 +205,122 @@ const deleteSensor = async (req, res) => {
   res.status(StatusCodes.OK).json({ msg: `Success delete sensor ${sensorId}` });
 };
 
-const getSensorWithSensorControls = async (req, res) => {
-  const sensor = await Sensor.findByPk(req.params.id, {
-    include: [
-      {
-        model: SensorControlsSchema,
-        as: "sensorControls",
-      },
-    ],
-  });
+// const getSensorWithSensorControls = async (req, res) => {
+//   const sensor = await Sensor.findByPk(req.params.id, {
+//     include: [
+//       {
+//         model: SensorControlsSchema,
+//         as: "sensorControls"
+//       }
+//     ]
+//   });
 
-  if (sensor) {
-    res.status(StatusCodes.OK).json({
-      sensor: {
-        sensorId: sensor.id,
-        boardId: sensor.boardId,
-        name: sensor.name,
-        pin: sensor.pin,
-        type: sensor.type,
-        topic: sensor.topic,
-        image: sensor.image,
-        sensorControls: sensor.sensorControls,
-      },
-    });
-  } else {
-    throw new NotFoundError(`No sensor with id ${req.params.id}`);
-  }
-};
+//   if (sensor) {
+//     res.status(StatusCodes.OK).json({
+//       sensor: {
+//         sensorId: sensor.id,
+//         boardId: sensor.boardId,
+//         name: sensor.name,
+//         pin: sensor.pin,
+//         type: sensor.type,
+//         topic: sensor.topic,
+//         image: sensor.image,
+//         sensorControls: sensor.sensorControls
+//       }
+//     });
+//   } else {
+//     throw new NotFoundError(`No sensor with id ${req.params.id}`);
+//   }
+// };
 
-const getSensorWithSensorData = async (req, res) => {
-  const sensor = await Sensor.findByPk(req.params.id, {
-    include: [
-      {
-        model: SensorDataSchema,
-        as: "sensorData",
-      },
-    ],
-  });
+// const getSensorWithSensorData = async (req, res) => {
+//   const sensor = await Sensor.findByPk(req.params.id, {
+//     include: [
+//       {
+//         model: SensorDataSchema,
+//         as: "sensorData"
+//       }
+//     ]
+//   });
 
-  if (sensor) {
-    res.status(StatusCodes.OK).json({
-      sensor: {
-        sensorId: sensor.id,
-        boardId: sensor.boardId,
-        name: sensor.name,
-        pin: sensor.pin,
-        type: sensor.type,
-        topic: sensor.topic,
-        image: sensor.image,
-        sensorData: sensor.sensorData,
-      },
-    });
-  } else {
-    throw new NotFoundError(`No sensor with id ${req.params.id}`);
-  }
-};
+//   if (sensor) {
+//     res.status(StatusCodes.OK).json({
+//       sensor: {
+//         sensorId: sensor.id,
+//         boardId: sensor.boardId,
+//         name: sensor.name,
+//         pin: sensor.pin,
+//         type: sensor.type,
+//         topic: sensor.topic,
+//         image: sensor.image,
+//         sensorData: sensor.sensorData
+//       }
+//     });
+//   } else {
+//     throw new NotFoundError(`No sensor with id ${req.params.id}`);
+//   }
+// };
 
-const getSensorWithDashboards = async (req, res) => {
-  const sensor = await Sensor.findByPk(req.params.id, {
-    include: [
-      {
-        model: DashboardSchema,
-        as: "dashboards",
-      },
-    ],
-  });
+// const getSensorWithDashboards = async (req, res) => {
+//   const sensor = await Sensor.findByPk(req.params.id, {
+//     include: [
+//       {
+//         model: DashboardSchema,
+//         as: "dashboards"
+//       }
+//     ]
+//   });
 
-  if (sensor) {
-    res.status(StatusCodes.OK).json({
-      sensor: {
-        sensorId: sensor.id,
-        boardId: sensor.boardId,
-        name: sensor.name,
-        pin: sensor.pin,
-        type: sensor.type,
-        topic: sensor.topic,
-        image: sensor.image,
-        dashboards: sensor.dashboards,
-      },
-    });
-  } else {
-    throw new NotFoundError(`No sensor with id ${req.params.id}`);
-  }
-};
+//   if (sensor) {
+//     res.status(StatusCodes.OK).json({
+//       sensor: {
+//         sensorId: sensor.id,
+//         boardId: sensor.boardId,
+//         name: sensor.name,
+//         pin: sensor.pin,
+//         type: sensor.type,
+//         topic: sensor.topic,
+//         image: sensor.image,
+//         dashboards: sensor.dashboards
+//       }
+//     });
+//   } else {
+//     throw new NotFoundError(`No sensor with id ${req.params.id}`);
+//   }
+// };
 
-const getSensorWithNotifications = async (req, res) => {
-  const sensor = await Sensor.findByPk(req.params.id, {
-    include: [
-      {
-        model: NotificationSchema,
-        as: "notifications",
-      },
-    ],
-  });
+// const getSensorWithNotifications = async (req, res) => {
+//   const sensor = await Sensor.findByPk(req.params.id, {
+//     include: [
+//       {
+//         model: NotificationSchema,
+//         as: "notifications"
+//       }
+//     ]
+//   });
 
-  if (sensor) {
-    res.status(StatusCodes.OK).json({
-      sensor: {
-        sensorId: sensor.id,
-        boardId: sensor.boardId,
-        name: sensor.name,
-        pin: sensor.pin,
-        type: sensor.type,
-        topic: sensor.topic,
-        image: sensor.image,
-        notifications: sensor.notifications,
-      },
-    });
-  } else {
-    throw new NotFoundError(`No sensor with id ${req.params.id}`);
-  }
-};
+//   if (sensor) {
+//     res.status(StatusCodes.OK).json({
+//       sensor: {
+//         sensorId: sensor.id,
+//         boardId: sensor.boardId,
+//         name: sensor.name,
+//         pin: sensor.pin,
+//         type: sensor.type,
+//         topic: sensor.topic,
+//         image: sensor.image,
+//         notifications: sensor.notifications
+//       }
+//     });
+//   } else {
+//     throw new NotFoundError(`No sensor with id ${req.params.id}`);
+//   }
+// };
 
 module.exports = {
   getAllSensors,
   getSensor,
   addSensor,
   updateSensor,
-  deleteSensor,
+  deleteSensor
 };
