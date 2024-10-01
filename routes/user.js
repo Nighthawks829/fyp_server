@@ -25,7 +25,7 @@ const apiLimiter = rateLimiter({
 
 router
   .route("/")
-  .get(authenticateUser, getAllUsers)
+  .get(authenticateAdmin, getAllUsers)
   .post(authenticateAdmin, addUser);
 
 router
