@@ -8,6 +8,7 @@ const {
 const { StatusCodes } = require("http-status-codes");
 const { BadRequestError, NotFoundError, ForbiddenError } = require("../errors");
 const bcrypt = require("bcrypt");
+const path = require("path");
 
 const User = UserSchema;
 const addUser = async (req, res) => {
@@ -16,6 +17,14 @@ const addUser = async (req, res) => {
 
   if (req.files && req.files.image) {
     const file = req.files.image;
+    const allowedExtensions = [".jpg", ".jpeg", ".png"];
+    const fileExtension = path.extname(file.name).toLowerCase();
+    if (!allowedExtensions.includes(fileExtension)) {
+      throw new BadRequestError(
+        "Invalid file type. Only image files are allowed"
+      );
+    }
+
     image = file.name;
     const uploadPath = `${__dirname}/../../client/public/uploads/${file.name}`;
 
@@ -210,9 +219,22 @@ const updateUser = async (req, res) => {
   user.password = password;
   user.role = role;
 
+  let image = "";
+
   // Handle image upload
   if (req.files && req.files.image) {
     const file = req.files.image;
+
+    const allowedExtensions = [".jpg", ".jpeg", ".png"];
+    const fileExtension = path.extname(file.name).toLowerCase();
+    if (!allowedExtensions.includes(fileExtension)) {
+      throw new BadRequestError(
+        "Invalid file type. Only image files are allowed"
+      );
+    }
+
+    image = file.name;
+
     const imagePath = `${__dirname}/../../client/public/uploads/${file.name}`;
     file.mv(imagePath, (error) => {
       if (error) {
@@ -291,109 +313,109 @@ const deleteUser = async (req, res) => {
     .json({ msg: `Success delete user ${req.params.id}` });
 };
 
-const getUserWithBoards = async (req, res) => {
-  const user = await User.findByPk(req.params.id, {
-    include: [
-      {
-        model: BoardSchema,
-        as: "boards"
-      }
-    ]
-  });
+// const getUserWithBoards = async (req, res) => {
+//   const user = await User.findByPk(req.params.id, {
+//     include: [
+//       {
+//         model: BoardSchema,
+//         as: "boards"
+//       }
+//     ]
+//   });
 
-  if (user) {
-    res.status(StatusCodes.OK).json({
-      user: {
-        userId: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        image: user.image,
-        boards: user.boards
-      }
-    });
-  } else {
-    throw new NotFoundError(`No user with id ${req.params.id}`);
-  }
-};
+//   if (user) {
+//     res.status(StatusCodes.OK).json({
+//       user: {
+//         userId: user.id,
+//         name: user.name,
+//         email: user.email,
+//         role: user.role,
+//         image: user.image,
+//         boards: user.boards
+//       }
+//     });
+//   } else {
+//     throw new NotFoundError(`No user with id ${req.params.id}`);
+//   }
+// };
 
-const getUserWithDashboards = async (req, res) => {
-  const user = await User.findByPk(req.params.id, {
-    include: [
-      {
-        model: DashboardSchema,
-        as: "dashboards"
-      }
-    ]
-  });
+// const getUserWithDashboards = async (req, res) => {
+//   const user = await User.findByPk(req.params.id, {
+//     include: [
+//       {
+//         model: DashboardSchema,
+//         as: "dashboards"
+//       }
+//     ]
+//   });
 
-  if (user) {
-    res.status(StatusCodes.OK).json({
-      user: {
-        userId: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        image: user.image,
-        dashboards: user.dashboards
-      }
-    });
-  } else {
-    throw new NotFoundError(`No user with id ${req.params.id}`);
-  }
-};
+//   if (user) {
+//     res.status(StatusCodes.OK).json({
+//       user: {
+//         userId: user.id,
+//         name: user.name,
+//         email: user.email,
+//         role: user.role,
+//         image: user.image,
+//         dashboards: user.dashboards
+//       }
+//     });
+//   } else {
+//     throw new NotFoundError(`No user with id ${req.params.id}`);
+//   }
+// };
 
-const getUserWithNotifications = async (req, res) => {
-  const user = await User.findByPk(req.params.id, {
-    include: [
-      {
-        model: NotificationSchema,
-        as: "notifications"
-      }
-    ]
-  });
+// const getUserWithNotifications = async (req, res) => {
+//   const user = await User.findByPk(req.params.id, {
+//     include: [
+//       {
+//         model: NotificationSchema,
+//         as: "notifications"
+//       }
+//     ]
+//   });
 
-  if (user) {
-    res.status(StatusCodes.OK).json({
-      user: {
-        userId: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        image: user.image,
-        notifications: user.notifications
-      }
-    });
-  } else {
-    throw new NotFoundError(`No user with id ${req.params.id}`);
-  }
-};
+//   if (user) {
+//     res.status(StatusCodes.OK).json({
+//       user: {
+//         userId: user.id,
+//         name: user.name,
+//         email: user.email,
+//         role: user.role,
+//         image: user.image,
+//         notifications: user.notifications
+//       }
+//     });
+//   } else {
+//     throw new NotFoundError(`No user with id ${req.params.id}`);
+//   }
+// };
 
-const getUserWithSensorControls = async (req, res) => {
-  const user = await User.findByPk(req.params.id, {
-    include: [
-      {
-        model: SensorControlsSchema,
-        as: "sensorControls"
-      }
-    ]
-  });
+// const getUserWithSensorControls = async (req, res) => {
+//   const user = await User.findByPk(req.params.id, {
+//     include: [
+//       {
+//         model: SensorControlsSchema,
+//         as: "sensorControls"
+//       }
+//     ]
+//   });
 
-  if (user) {
-    res.status(StatusCodes.OK).json({
-      user: {
-        userId: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        image: user.image,
-        sensorControls: user.sensorControls
-      }
-    });
-  } else {
-    throw new NotFoundError(`No user with id ${req.params.id}`);
-  }
-};
+//   if (user) {
+//     res.status(StatusCodes.OK).json({
+//       user: {
+//         userId: user.id,
+//         name: user.name,
+//         email: user.email,
+//         role: user.role,
+//         image: user.image,
+//         sensorControls: user.sensorControls
+//       }
+//     });
+//   } else {
+//     throw new NotFoundError(`No user with id ${req.params.id}`);
+//   }
+// };
 
 module.exports = {
   addUser,

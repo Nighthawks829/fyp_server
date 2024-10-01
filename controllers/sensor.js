@@ -76,10 +76,9 @@ const getSensor = async (req, res) => {
 const addSensor = async (req, res) => {
   const { boardId, name, pin, type, topic } = req.body;
   let image = "";
+  const file = req.files.image;
 
   if (req.files && req.files.image) {
-    const file = req.files.image;
-
     const allowedExtensions = [".jpg", ".jpeg", ".png"];
     const fileExtension = path.extname(file.name).toLowerCase();
     if (!allowedExtensions.includes(fileExtension)) {
