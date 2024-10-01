@@ -156,7 +156,7 @@ describe("Board API", () => {
   });
 
   describe("Get all board route", () => {
-    describe("Given the board is exist and user is admin", () => {
+    describe("Given the boards exist and user is admin", () => {
       it("should return 200 and get list of all boards and list length", async () => {
         const res = await request(app)
           .get("/api/v1/board")
@@ -173,7 +173,7 @@ describe("Board API", () => {
         expect(res.body.boards[0]).toHaveProperty("image");
       });
     });
-    describe("Given the board is exist and user is normal user", () => {
+    describe("Given the boards exist and user is normal user", () => {
       it("should return 200 and list of all boards and list length", async () => {
         const res = await request(app)
           .get("/api/v1/board")
@@ -193,7 +193,7 @@ describe("Board API", () => {
   });
 
   describe("Get board with id route", () => {
-    describe("Given the board exist, valid boardId and user is admin", () => {
+    describe("Given the board exist and user is admin", () => {
       it("should return a 200 and board payload", async () => {
         const res = await request(app)
           .get(`/api/v1/board/${testBoardId}`)
@@ -209,7 +209,7 @@ describe("Board API", () => {
       });
     });
 
-    describe("Given the board exist, valid boardId and user is normal user", () => {
+    describe("Given the board exist and user is normal user", () => {
       it("should return a 200 and board payload", async () => {
         const res = await request(app)
           .get(`/api/v1/board/${testBoardId}`)
@@ -227,8 +227,6 @@ describe("Board API", () => {
 
     describe("Given the board is not found", () => {
       it("should return a 404 and not found error message", async () => {
-        const nonExistentBoardId = "nonExistentBoardId";
-
         const res = await request(app)
           .get(`/api/v1/board/${nonExistentBoardId}`)
           .set("Authorization", `Bearer ${adminToken}`);
@@ -589,7 +587,7 @@ describe("Board API", () => {
 
   describe("Delete board route", () => {
     describe("Given the user is admin", () => {
-      it("should return a 200 and successfult delete message", async () => {
+      it("should return a 200 and successful delete message", async () => {
         const res = await request(app)
           .delete(`/api/v1/board/${testBoardId}`)
           .set("Authorization", `Bearer ${adminToken}`);
