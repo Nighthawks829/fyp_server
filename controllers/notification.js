@@ -44,20 +44,24 @@ const getNotification = async (req, res) => {
   });
 
   if (notification) {
-    res.status(StatusCodes.OK).json({
-      notification: {
-        notificationId: notification.id,
-        userId: notification.userId,
-        sensorId: notification.sensorId,
-        name: notification.name,
-        threshold: notification.threshold,
-        condition: notification.condition,
-        message: notification.message,
-        platform: notification.platform,
-        address: notification.address,
-        sensorName: notification.sensor.name
-      }
-    });
+    if (notification.userId !== req.user.userId) {
+      throw new ForbiddenError("No allow to get other user notifications");
+    } else {
+      res.status(StatusCodes.OK).json({
+        notification: {
+          notificationId: notification.id,
+          userId: notification.userId,
+          sensorId: notification.sensorId,
+          name: notification.name,
+          threshold: notification.threshold,
+          condition: notification.condition,
+          message: notification.message,
+          platform: notification.platform,
+          address: notification.address,
+          sensorName: notification.sensor.name
+        }
+      });
+    }
   } else {
     throw new NotFoundError(`No notification with id ${req.params.id}`);
   }
