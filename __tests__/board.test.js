@@ -26,16 +26,25 @@ const testBoardLocation = "testBoardLocation";
 const testBoardIpAddress = "1.1.1.1";
 const testBoardImage = "testBoardImage";
 
+const fixedBoardId = "fixedBoardId";
+const fixedBoardName = "fixedBoardName";
+const fixedBoardType = "fixedBoardType";
+const fixedBoardLocation = "fixedBoardLocation";
+const fixedBoardIpAddress = "3.3.3.3";
+const fixedBoardImage = "fixedBoardImage";
+
 // New test board configuration
 const newBoard = {
   userId: testAdminId,
   name: "Test board",
   type: "Test type",
   location: "Test location",
-  ip_address: "2.2.2.2",
+  ip_address: "2.2.2.2"
 };
 
 const newBoardImage = "testBoardImage.jpeg";
+
+const invalidIPAddress = "300.300.300.300";
 
 // Path to the test image file
 const testImagePath = path.join(__dirname, "assets", newBoardImage);
@@ -54,7 +63,7 @@ const updatedBoard = {
   name: "Update board",
   type: "Update type",
   location: "Update location",
-  ip_address: "2.2.2.3",
+  ip_address: "2.2.2.3"
 };
 
 const updateBoardImage = "testBoardImage2.jpeg";
@@ -73,8 +82,6 @@ const testUpdatetInvalidImagePath = path.join(
 
 const nonExistentBoardId = "nonExistBoardId";
 
-const existedIPAddress = "1.1.1.1";
-
 let adminToken = "";
 let userToken = "";
 
@@ -87,7 +94,7 @@ describe("Board API", () => {
       email: testAdminEmail,
       password: testAdminPassword,
       role: testAdminRole,
-      image: testAdminImage,
+      image: testAdminImage
     });
 
     // Create test user
@@ -97,7 +104,7 @@ describe("Board API", () => {
       email: testUserEmail,
       password: testUserPassword,
       role: testUserRole,
-      image: testUserImage,
+      image: testUserImage
     });
 
     // Create test board
@@ -108,13 +115,24 @@ describe("Board API", () => {
       type: testBoardType,
       location: testBoardLocation,
       ip_address: testBoardIpAddress,
-      image: testBoardImage,
+      image: testBoardImage
+    });
+
+    // Create fixed board
+    await Board.create({
+      id: fixedBoardId,
+      userId: testAdminId,
+      name: fixedBoardName,
+      type: fixedBoardType,
+      location: fixedBoardLocation,
+      ip_address: fixedBoardIpAddress,
+      image: fixedBoardImage
     });
 
     // Sign in admin and get admin token
     const adminResponse = await request(app).post("/api/v1/auth/login").send({
       email: testAdminEmail,
-      password: testAdminPassword,
+      password: testAdminPassword
     });
 
     adminToken = adminResponse.body.token;
@@ -122,7 +140,7 @@ describe("Board API", () => {
     // Sign in as user and get user token
     const userResponse = await request(app).post("/api/v1/auth/login").send({
       email: testUserEmail,
-      password: testUserPassword,
+      password: testUserPassword
     });
 
     userToken = userResponse.body.token;
@@ -134,20 +152,26 @@ describe("Board API", () => {
   afterAll(async () => {
     await Board.destroy({
       where: {
-        id: testBoardId,
-      },
+        id: testBoardId
+      }
+    });
+
+    await Board.destroy({
+      where: {
+        id: fixedBoardId
+      }
     });
 
     await User.destroy({
       where: {
-        id: testAdminId,
-      },
+        id: testAdminId
+      }
     });
 
     await User.destroy({
       where: {
-        id: testUserId,
-      },
+        id: testUserId
+      }
     });
 
     // await sequelize.sync();
@@ -271,8 +295,8 @@ describe("Board API", () => {
         // Delete the add test board after test
         Board.destroy({
           where: {
-            id: res.body.board.boardId,
-          },
+            id: res.body.board.boardId
+          }
         });
       });
     });
@@ -409,11 +433,31 @@ describe("Board API", () => {
           .field("name", newBoard.name)
           .field("type", newBoard.type)
           .field("location", newBoard.location)
-          .field("ip_address", existedIPAddress)
+          .field("ip_address", fixedBoardIpAddress)
           .attach("image", testImagePath);
 
         expect(res.statusCode).toEqual(400);
         expect(res.body).toHaveProperty("msg", "IP address must be unique");
+      });
+    });
+
+    describe("Given the board IP address is invalid", () => {
+      it("should return a 400 and validation error message", async () => {
+        const res = await request(app)
+          .post("/api/v1/board")
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("userId", newBoard.userId)
+          .field("name", newBoard.name)
+          .field("type", newBoard.type)
+          .field("location", newBoard.location)
+          .field("ip_address", invalidIPAddress)
+          .attach("image", testImagePath);
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty(
+          "msg",
+          "Please provide a valid IP address"
+        );
       });
     });
   });
@@ -581,6 +625,43 @@ describe("Board API", () => {
 
         expect(res.statusCode).toEqual(400);
         expect(res.body).toHaveProperty("msg", "Please provide all values");
+      });
+    });
+
+    describe("Given the board IP address is existed", () => {
+      it("should return a 400 and not unique error message", async () => {
+        const res = await request(app)
+          .patch(`/api/v1/board/${testBoardId}`)
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("userId", newBoard.userId)
+          .field("name", newBoard.name)
+          .field("type", newBoard.type)
+          .field("location", newBoard.location)
+          .field("ip_address", fixedBoardIpAddress)
+          .attach("image", testImagePath);
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty("msg", "IP address must be unique");
+      });
+    });
+
+    describe("Given the board IP address is invalid", () => {
+      it("should return a 400 and validation error message", async () => {
+        const res = await request(app)
+          .patch(`/api/v1/board/${testBoardId}`)
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("userId", newBoard.userId)
+          .field("name", newBoard.name)
+          .field("type", newBoard.type)
+          .field("location", newBoard.location)
+          .field("ip_address", invalidIPAddress)
+          .attach("image", testImagePath);
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty(
+          "msg",
+          "Please provide a valid IP address"
+        );
       });
     });
   });
