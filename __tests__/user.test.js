@@ -211,7 +211,7 @@ describe("User API", () => {
     });
 
     describe("Given the user exist and user is normal user", () => {
-      it("should return a 401 and authentication invalid error message", async () => {
+      it("should return a 403 and authentication invalid error message", async () => {
         const res = await request(app)
           .get(`/api/v1/user/${testAdminId}`)
           .set("Authorization", `Bearer ${userToken}`);
