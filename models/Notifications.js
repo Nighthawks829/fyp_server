@@ -27,7 +27,7 @@ const NotificationSchema = sequelize.define(
       validate: {
         len: {
           args: [2, 100],
-          msg: "Notificatiions name should be between 2 and 100 characters",
+          msg: "Notification name should be between 2 and 100 characters",
         },
       },
     },

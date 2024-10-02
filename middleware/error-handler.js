@@ -6,7 +6,7 @@ const errorHandlerMiddleware = (err, req, res, next) => {
     msg: err.message || "Something went wrong try again later"
   };
 
-  // console.log(err)
+  // console.log(err);
 
   // This block catches a 'SequelizeUniqueConstraintError' which occurs when a
   // unique constraint is violated in Sequelize.
@@ -21,7 +21,7 @@ const errorHandlerMiddleware = (err, req, res, next) => {
     if (customError.msg.slice(0, 5) === "Email") {
       customError.msg = "Email address must be unique";
     }
-    if(customError.msg.slice(0, 5) === "Topic"){
+    if (customError.msg.slice(0, 5) === "Topic") {
       customError.msg = "Sensor MQTT topic must be unique";
     }
     customError.statusCode = StatusCodes.BAD_REQUEST;
@@ -49,20 +49,33 @@ const errorHandlerMiddleware = (err, req, res, next) => {
     }
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
-
   if (err.name === "SequelizeForeignKeyConstraintError") {
     customError.msg =
       "Cannot delete or update this record because it's referenced in other records.";
 
     // Customizing the message further based on the table/field involved
-    if (err.fields.includes("boardId")) {
+    if (
+      err.fields.includes("boardId") &&
+      err.parent.sqlMessage.includes("delete")
+    ) {
       customError.msg =
         "This board cannot be deleted because it has associated sensors.";
     }
 
-    if (err.fields.includes("sensorId")) {
+    if (
+      err.fields.includes("sensorId") &&
+      err.parent.sqlMessage.includes("delete")
+    ) {
       customError.msg =
         "This sensor cannot be deleted because it has associated records.";
+    }
+
+    if (
+      err.fields.includes("sensorId") &&
+      err.parent.sqlMessage.includes("add")
+    ) {
+      customError.msg =
+        "This sensor cannot be add because it has foreign key constraint fails";
     }
 
     if (err.fields.includes("userId")) {
@@ -72,8 +85,6 @@ const errorHandlerMiddleware = (err, req, res, next) => {
 
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
-
-  // console.log(err)
 
   return res.status(customError.statusCode).json({ msg: customError.msg });
 };
