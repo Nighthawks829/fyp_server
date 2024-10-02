@@ -34,6 +34,13 @@ const testSensorType = "Digital Input";
 const testSensorTopic = "testSensorTopic";
 const testSensorImage = "testSensorImage";
 
+const fixedSensorId = "fixedSensorId";
+const fixedSensorName = "fixedSensorName";
+const fixedSensorPin = 100;
+const fixedSensorType = "Digital Input";
+const fixedSensorTopic = "fixedSensorTopic";
+const fixedSensorImage = "fixedSensorImage";
+
 const nonExistSensorId = "nonExistSensorId";
 
 const newSensor = {
@@ -125,6 +132,17 @@ describe("Sensor API", () => {
       image: testSensorImage
     });
 
+    // Create test sensor
+    await Sensor.create({
+      id: fixedSensorId,
+      boardId: testBoardId,
+      name: fixedSensorName,
+      pin: fixedSensorPin,
+      type: fixedSensorType,
+      topic: fixedSensorTopic,
+      image: fixedSensorImage
+    });
+
     // Sign in admin and get admin token
     const adminResponse = await request(app).post("/api/v1/auth/login").send({
       email: testAdminEmail,
@@ -149,6 +167,12 @@ describe("Sensor API", () => {
     await Sensor.destroy({
       where: {
         id: testSensorId
+      }
+    });
+
+    await Sensor.destroy({
+      where: {
+        id: fixedSensorId
       }
     });
 
@@ -518,6 +542,26 @@ describe("Sensor API", () => {
         );
       });
     });
+
+    describe("Given the topic is not unique", () => {
+      it("should return a 400 and not unqiue error message", async () => {
+        const res = await request(app)
+          .post("/api/v1/sensor")
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("boardId", newSensor.boardId)
+          .field("name", newSensor.name)
+          .field("pin", newSensor.pin)
+          .field("type", newSensor.type)
+          .field("topic", fixedSensorTopic)
+          .attach("image", newSensorImagePath);
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty(
+          "msg",
+          "Sensor MQTT topic must be unique"
+        );
+      });
+    });
   });
 
   describe("Update sensor route", () => {
@@ -778,6 +822,26 @@ describe("Sensor API", () => {
         expect(res.body).toHaveProperty(
           "msg",
           "Topic length should be between 2 and 100 characters"
+        );
+      });
+    });
+
+    describe("Given the topic is not unique", () => {
+      it("should return a 400 and not unqiue error message", async () => {
+        const res = await request(app)
+          .patch(`/api/v1/sensor/${testSensorId}`)
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("boardId", newSensor.boardId)
+          .field("name", newSensor.name)
+          .field("pin", newSensor.pin)
+          .field("type", newSensor.type)
+          .field("topic", fixedSensorTopic)
+          .attach("image", newSensorImagePath);
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty(
+          "msg",
+          "Sensor MQTT topic must be unique"
         );
       });
     });

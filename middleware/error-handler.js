@@ -21,6 +21,9 @@ const errorHandlerMiddleware = (err, req, res, next) => {
     if (customError.msg.slice(0, 5) === "Email") {
       customError.msg = "Email address must be unique";
     }
+    if(customError.msg.slice(0, 5) === "Topic"){
+      customError.msg = "Sensor MQTT topic must be unique";
+    }
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
 
