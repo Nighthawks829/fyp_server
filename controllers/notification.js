@@ -68,16 +68,10 @@ const getNotification = async (req, res) => {
 };
 
 const addNotification = async (req, res) => {
-  const {
-    userId,
-    sensorId,
-    name,
-    threshold,
-    condition,
-    message,
-    platform,
-    address
-  } = req.body;
+  const { sensorId, name, threshold, condition, message, platform, address } =
+    req.body;
+
+  const userId = req.user.userId;
 
   const notification = await Notification.create({
     userId: userId,
@@ -114,7 +108,6 @@ const addNotification = async (req, res) => {
 const updateNotification = async (req, res) => {
   const {
     body: {
-      userId,
       sensorId,
       name,
       threshold,
@@ -125,6 +118,8 @@ const updateNotification = async (req, res) => {
     },
     params: { id: notificationId }
   } = req;
+
+  const userId = req.user.userId;
 
   if (
     !userId ||
