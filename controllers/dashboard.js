@@ -6,7 +6,7 @@ const Dashboard = DashboardSchema;
 const Sensor = SensorSchema;
 
 const getAllDashboard = async (req, res) => {
-  const userId = req.params.id;
+  const userId = req.user.userId;
   const dashboards = await Dashboard.findAll({
     where: { userId: userId },
     include: [

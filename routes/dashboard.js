@@ -6,14 +6,15 @@ const {
   getDashboard,
   addDashboard,
   updateDashboard,
-  deleteDashboard,
+  deleteDashboard
 } = require("../controllers/dashboard");
 
 const authenticateUser = require("../middleware/authenticationUser");
 
-router.route("/").post(authenticateUser, addDashboard);
-
-router.route("/getAllDashboards/:id").get(authenticateUser, getAllDashboard);
+router
+  .route("/")
+  .get(authenticateUser, getAllDashboard)
+  .post(authenticateUser, addDashboard);
 
 router
   .route("/:id")
