@@ -43,6 +43,9 @@ const getDashboard = async (req, res) => {
   const dashboard = await Dashboard.findByPk(dashboardId);
 
   if (dashboard) {
+    if (dashboard.userId !== req.user.userId) {
+      throw new ForbiddenError("No allow to get other user dashboard");
+    }
     res.status(StatusCodes.OK).json({
       dashboard: {
         dashboardId: dashboard.id,
@@ -54,7 +57,7 @@ const getDashboard = async (req, res) => {
       }
     });
   } else {
-    throw new NotFoundError(`No dashboard with userId ${dashboardId}`);
+    throw new NotFoundError(`No dashboard with id ${dashboardId}`);
   }
 };
 
