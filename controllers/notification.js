@@ -128,34 +128,37 @@ const updateNotification = async (req, res) => {
 
   const notification = await Notification.findByPk(notificationId);
 
-  if (notification.userId !== userId) {
-    throw new ForbiddenError("No allow to update other user notification");
-  }
-
-  // notification.userId = userId;
-  notification.sensorId = sensorId;
-  notification.name = name;
-  notification.threshold = threshold;
-  notification.condition = condition;
-  notification.message = message;
-  notification.platform = platform;
-  notification.address = address;
-
-  await notification.save();
-
-  res.status(StatusCodes.OK).json({
-    notification: {
-      notificationId: notificationId,
-      userId: userId,
-      sensorId: notification.sensorId,
-      name: notification.name,
-      threshold: notification.threshold,
-      condition: notification.condition,
-      message: notification.message,
-      platform: notification.platform,
-      address: notification.address
+  if (notification) {
+    if (notification.userId !== userId) {
+      throw new ForbiddenError("No allow to update other user notification");
     }
-  });
+    // notification.userId = userId;
+    notification.sensorId = sensorId;
+    notification.name = name;
+    notification.threshold = threshold;
+    notification.condition = condition;
+    notification.message = message;
+    notification.platform = platform;
+    notification.address = address;
+
+    await notification.save();
+
+    res.status(StatusCodes.OK).json({
+      notification: {
+        notificationId: notificationId,
+        userId: userId,
+        sensorId: notification.sensorId,
+        name: notification.name,
+        threshold: notification.threshold,
+        condition: notification.condition,
+        message: notification.message,
+        platform: notification.platform,
+        address: notification.address
+      }
+    });
+  } else {
+    throw new NotFoundError(`No notification with id ${req.params.id}`);
+  }
 };
 
 const deleteNotification = async (req, res) => {
