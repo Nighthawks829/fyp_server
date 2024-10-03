@@ -22,7 +22,7 @@ const DashboardSchema = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
-        min: {
+        len: {
           args: [2, 100],
           msg: "Dashboard component name should be between 2 and 100 characters",
         },
