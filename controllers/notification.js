@@ -107,15 +107,7 @@ const addNotification = async (req, res) => {
 
 const updateNotification = async (req, res) => {
   const {
-    body: {
-      sensorId,
-      name,
-      threshold,
-      condition,
-      message,
-      platform,
-      address
-    },
+    body: { sensorId, name, threshold, condition, message, platform, address },
     params: { id: notificationId }
   } = req;
 
@@ -134,13 +126,13 @@ const updateNotification = async (req, res) => {
     throw new BadRequestError("Please provide all values");
   }
 
-  if (req.user.userId !== userId) {
+  const notification = await Notification.findByPk(notificationId);
+
+  if (notification.userId !== userId) {
     throw new ForbiddenError("No allow to update other user notification");
   }
 
-  const notification = await Notification.findByPk(notificationId);
-
-  notification.userId = userId;
+  // notification.userId = userId;
   notification.sensorId = sensorId;
   notification.name = name;
   notification.threshold = threshold;
@@ -154,7 +146,7 @@ const updateNotification = async (req, res) => {
   res.status(StatusCodes.OK).json({
     notification: {
       notificationId: notificationId,
-      userId: notification.userId,
+      userId: userId,
       sensorId: notification.sensorId,
       name: notification.name,
       threshold: notification.threshold,
