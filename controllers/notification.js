@@ -166,27 +166,22 @@ const deleteNotification = async (req, res) => {
 
   const notificationUserId = await Notification.findByPk(notificationId);
 
-  if (!notificationUserId) {
-    throw new NotFoundError(`No notification with id ${notificationId}`);
-  }
-
-  if (notificationUserId.userId !== req.user.userId) {
-    throw new ForbiddenError("No allow to delete other user notification");
-  }
-
-  const notification = await Notification.destroy({
-    where: {
-      id: notificationId
+  if (notificationUserId) {
+    if (notificationUserId.userId !== req.user.userId) {
+      throw new ForbiddenError("No allow to delete other user notification");
     }
-  });
+    const notification = await Notification.destroy({
+      where: {
+        id: notificationId
+      }
+    });
 
-  if (!notification) {
+    res
+      .status(StatusCodes.OK)
+      .json({ msg: `Success delete notification ${notificationId}` });
+  } else {
     throw new NotFoundError(`No notification with id ${notificationId}`);
   }
-
-  res
-    .status(StatusCodes.OK)
-    .json({ msg: `Success delete notification ${notificationId}` });
 };
 
 module.exports = {
