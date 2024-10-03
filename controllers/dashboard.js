@@ -62,7 +62,9 @@ const getDashboard = async (req, res) => {
 };
 
 const addDashboard = async (req, res) => {
-  const { userId, sensorId, name, control, type } = req.body;
+  const { sensorId, name, control, type } = req.body;
+
+  const userId = req.user.userId;
 
   const sensor = await Sensor.findByPk(sensorId);
 
