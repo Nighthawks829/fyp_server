@@ -58,6 +58,8 @@ const newSensorImagePath = path.join(__dirname, "assets", newSensorImage);
 const invalidImage = "empty.mp3";
 const testInvalidImagePath = path.join(__dirname, "assets", invalidImage);
 
+const invalidBoardId = "invalidBoardId";
+
 const shortSensorName = "a";
 const longSensorName =
   "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
@@ -66,6 +68,7 @@ const invalidSensorType = "InvalidSensorType";
 const shortTopicName = "a";
 const longTopicName =
   "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+const invalidPin = "invalidPin";
 
 const updateSensor = {
   boardId: testBoardId,
@@ -443,6 +446,25 @@ describe("Sensor API", () => {
       });
     });
 
+    describe("Given the boardId is not valid", () => {
+      it("should return a 400 and foreign key constraint error", async () => {
+        const res = await request(app)
+          .post("/api/v1/sensor")
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("boardId", invalidBoardId)
+          .field("name", newSensor.name)
+          .field("pin", newSensor.pin)
+          .field("type", newSensor.type)
+          .field("topic", newSensor.topic)
+          .attach("image", newSensorImagePath);
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty(
+          "msg",
+          "This board cannot be add because it has foreign key constraint fails"
+        );
+      });
+    });
+
     describe("Given the name is shorter than 2 characters", () => {
       it("should return a 400 and validation error message", async () => {
         const res = await request(app)
@@ -459,6 +481,26 @@ describe("Sensor API", () => {
         expect(res.body).toHaveProperty(
           "msg",
           "Sensor name should be between 2 and 50 characters"
+        );
+      });
+    });
+
+    describe("Given the sensor pin is not numeric value", () => {
+      it("should return a 400 and validation error message", async () => {
+        const res = await request(app)
+          .post("/api/v1/sensor")
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("boardId", newSensor.boardId)
+          .field("name", newSensor.name)
+          .field("pin", invalidPin)
+          .field("type", newSensor.type)
+          .field("topic", newSensor.topic)
+          .attach("image", newSensorImagePath);
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty(
+          "msg",
+          "Please provide a valid pin number"
         );
       });
     });
@@ -726,6 +768,25 @@ describe("Sensor API", () => {
       });
     });
 
+    describe("Given the boardId is not valid", () => {
+      it("should return a 400 and foreign key constraint error", async () => {
+        const res = await request(app)
+          .patch(`/api/v1/sensor/${testSensorId}`)
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("boardId", invalidBoardId)
+          .field("name", updateSensor.name)
+          .field("pin", updateSensor.pin)
+          .field("type", updateSensor.type)
+          .field("topic", updateSensor.topic)
+          .attach("image", testUpdateImagePath);
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty(
+          "msg",
+          "This board cannot be add because it has foreign key constraint fails"
+        );
+      });
+    });
+
     describe("Given the name is shorter than 2 characters", () => {
       it("should return a 400 and validation error message", async () => {
         const res = await request(app)
@@ -762,6 +823,26 @@ describe("Sensor API", () => {
         expect(res.body).toHaveProperty(
           "msg",
           "Sensor name should be between 2 and 50 characters"
+        );
+      });
+    });
+
+    describe("Given the sensor pin is not numeric value", () => {
+      it("should return a 400 and validation error message", async () => {
+        const res = await request(app)
+          .patch(`/api/v1/sensor/${testSensorId}`)
+          .set("Authorization", `Bearer ${adminToken}`)
+          .field("boardId", updateSensor.boardId)
+          .field("name", updateSensor.name)
+          .field("pin", invalidPin)
+          .field("type", updateSensor.type)
+          .field("topic", updateSensor.topic)
+          .attach("image", testUpdateImagePath);
+
+        expect(res.statusCode).toEqual(400);
+        expect(res.body).toHaveProperty(
+          "msg",
+          "Please provide a valid pin number"
         );
       });
     });

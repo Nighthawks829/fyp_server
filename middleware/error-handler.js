@@ -63,6 +63,14 @@ const errorHandlerMiddleware = (err, req, res, next) => {
     }
 
     if (
+      err.fields.includes("boardId") &&
+      err.parent.sqlMessage.includes("add")
+    ) {
+      customError.msg =
+        "This board cannot be add because it has foreign key constraint fails";
+    }
+
+    if (
       err.fields.includes("sensorId") &&
       err.parent.sqlMessage.includes("delete")
     ) {
