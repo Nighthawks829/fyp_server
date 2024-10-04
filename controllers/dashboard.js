@@ -105,74 +105,63 @@ const addDashboard = async (req, res) => {
 
 const updateDashboard = async (req, res) => {
   const {
-    body: { userId, sensorId, name, control, type },
+    body: { sensorId, name, control, type },
     params: { id: dashboardId }
   } = req;
 
-  // if (
-  //   !userId ||
-  //   !sensorId ||
-  //   !name ||
-  //   control === null ||
-  //   control === undefined ||
-  //   !type
-  // ) {
-  //   throw new BadRequestError("Please provide all values");
-  // }
-
-  if (req.user.userId !== userId) {
-    console.log(req.user.userId);
-    console.log(userId);
-    throw new ForbiddenError("No allow to update other user dashboard");
+  if (!name) {
+    throw new BadRequestError("Please provide all values");
   }
 
   const dashboard = await Dashboard.findByPk(dashboardId);
 
+  if (dashboard) {
+    if (req.user.userId !== dashboard.userId) {
+      throw new ForbiddenError("No allow to update other user dashboard");
+    }
+
+    dashboard.name = name;
+
+    await dashboard.save();
+
+    res.status(StatusCodes.OK).json({
+      dashboard: {
+        dashboardId: dashboardId,
+        userId: dashboard.userId,
+        sensorId: dashboard.sensorId,
+        name: dashboard.name,
+        control: dashboard.control,
+        type: dashboard.type
+      }
+    });
+  } else {
+    throw new NotFoundError(`No dashboard with id ${req.params.id}`);
+  }
   // dashboard.userId = userId;
   // dashboard.sensorId = sensorId;
-  dashboard.name = name;
   // dashboard.control = control;
   // dashboard.type = type;
-
-  await dashboard.save();
-
-  res.status(StatusCodes.OK).json({
-    dashboard: {
-      dashboardId: dashboardId,
-      userId: dashboard.userId,
-      sensorId: dashboard.sensorId,
-      name: dashboard.name,
-      control: dashboard.control,
-      type: dashboard.type
-    }
-  });
 };
 
 const deleteDashboard = async (req, res) => {
   const dashboardId = req.params.id;
   const dashboardUserId = await Dashboard.findByPk(dashboardId);
 
-  if (!dashboardUserId) {
-    throw new NotFoundError(`No dashboard with id ${dashboardId}`);
-  }
-
-  if (dashboardUserId.userId !== req.user.userId) {
-    throw new ForbiddenError("No allow to delete other user dashboard");
-  }
-
-  const dashboard = await Dashboard.destroy({
-    where: {
-      id: dashboardId
+  if (dashboardUserId) {
+    if (dashboardUserId.userId !== req.user.userId) {
+      throw new ForbiddenError("No allow to delete other user dashboard");
     }
-  });
-
-  if (!dashboard) {
+    const dashboard = await Dashboard.destroy({
+      where: {
+        id: dashboardId
+      }
+    });
+    res
+      .status(StatusCodes.OK)
+      .json({ msg: `Success delete dashboard ${dashboardId}` });
+  } else {
     throw new NotFoundError(`No dashboard with id ${dashboardId}`);
   }
-
-  res
-    .status(StatusCodes.OK)
-    .json({ msg: `Success delete dashboard ${dashboardId}` });
 };
 
 module.exports = {
