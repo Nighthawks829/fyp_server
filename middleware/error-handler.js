@@ -27,6 +27,15 @@ const errorHandlerMiddleware = (err, req, res, next) => {
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
 
+  if (
+    err.name === "SequelizeDatabaseError" &&
+    err.parent.code === "ER_TRUNCATED_WRONG_VALUE_FOR_FIELD"
+  ) {
+    const columnName = err.parent.sqlMessage.match(/'([^']+)'/)[1];
+    customError.msg = "Incorrect integer value";
+    customError.statusCode = StatusCodes.BAD_REQUEST;
+  }
+
   // This block catches a 'SequelizeDatabaseError' with a 'WARN_DATA_TRUNCATED' code,
   // which occurs when an attempt is made to insert a value that is not in the enum list
   // of allowed values for a particular column.
