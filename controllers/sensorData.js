@@ -34,12 +34,14 @@ const getSensorData = async (req, res) => {
   const formattedData = combinedData.map((entry) => {
     if (entry instanceof SensorData) {
       return {
+        sensorId: sensorId,
         type: "SensorData",
         data: entry.data,
         createdAt: entry.createdAt
       };
     } else if (entry instanceof SensorControl) {
       return {
+        sensorId: sensorId,
         type: "SensorControl",
         data: entry.value,
         createdAt: entry.createdAt
@@ -72,6 +74,7 @@ const getLatestSensorData = async (req, res) => {
   const formattedData = combinedData.map((entry) => {
     if (entry instanceof SensorData) {
       return {
+        sensorId: sensorId,
         type: "SensorData",
         data: entry.data,
         unit: entry.unit,
@@ -79,6 +82,7 @@ const getLatestSensorData = async (req, res) => {
       };
     } else if (entry instanceof SensorControl) {
       return {
+        sensorId: sensorId,
         type: "SensorControl",
         data: entry.value,
         createdAt: entry.createdAt
