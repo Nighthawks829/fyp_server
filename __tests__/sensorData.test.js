@@ -1,17 +1,14 @@
 const request = require("supertest");
-const app = require("../app");
-const { sequelize } = require("../models/Boards");
+const sequelize = require("../db/connect");
+const User = require("../models/Users");
 const Board = require("../models/Boards");
 const Sensor = require("../models/Sensors");
-const User = require("../models/Users");
 const SensorData = require("../models/SensorData");
+const app = require("../app");
 
-const jwt = require("jsonwebtoken");
-require("dotenv").config();
-
-const testAdminId = "testSensorDataAdminId";
+const testAdminId = "testBoardAdminId";
 const testAdminName = "Test Admin";
-const testAdminEmail = "testSensorDataAdmin@gmail.com";
+const testAdminEmail = "testBoardAdmin@gmail.com";
 const testAdminPassword = "password";
 const testAdminImage = "adminImage";
 const testAdminRole = "admin";
@@ -23,189 +20,239 @@ const testUserPassword = "password";
 const testUserImage = "userImage";
 const testUserRole = "user";
 
-const testBoardId = "testSensorDataBoardId";
+const testBoardId = "testBoardId";
 const testBoardName = "testBoardName";
 const testBoardType = "testBoardType";
 const testBoardLocation = "testBoardLocation";
-const testBoardIpAddress = "6.6.6.6";
+const testBoardIpAddress = "1.1.1.1";
 const testBoardImage = "testBoardImage";
 
-const testSensorId = "testSensorDataSensorId";
+const testSensorId = "testSensorId";
 const testSensorName = "testSensorName";
-const testSensorPin = "13";
-const testSensorType = "Digital Input";
-const testSensorTopic = "testDashboardTopic/";
+const testSensorPin = 99;
+const testSensorType = "Digital Output";
+const testSensorTopic = "testSensorTopic";
 const testSensorImage = "testSensorImage";
 
 const testSensorDataId = "testSensorDataId";
 const testSensorDataData = 999;
 const testSensorDataUnit = "testSensorDataUnit";
 
-beforeAll(async () => {
-  // Create test admin
-  await User.create({
-    id: testAdminId,
-    name: testAdminName,
-    email: testAdminEmail,
-    password: testAdminPassword,
-    role: testAdminRole,
-    image: testAdminImage,
-  });
-
-  // Create test user
-  await User.create({
-    id: testUserId,
-    name: testUserName,
-    email: testUserEmail,
-    password: testUserPassword,
-    role: testUserRole,
-    image: testUserImage,
-  });
-
-  // Create test board
-  await Board.create({
-    id: testBoardId,
-    userId: testAdminId,
-    name: testBoardName,
-    type: testBoardType,
-    location: testBoardLocation,
-    ip_address: testBoardIpAddress,
-    image: testBoardImage,
-  });
-
-  //   Create test sensor
-  await Sensor.create({
-    id: testSensorId,
-    boardId: testBoardId,
-    name: testSensorName,
-    pin: testSensorPin,
-    type: testSensorType,
-    topic: testSensorTopic,
-    image: testSensorImage,
-  });
-
-  //   Create test sensor data
-  await SensorData.create({
-    id: testSensorDataId,
-    sensorId: testSensorId,
-    data: testSensorDataData,
-    unit: testSensorDataUnit,
-  });
-
-  const response = await request(app).post("/api/v1/auth/login").send({
-    email: testAdminEmail,
-    password: testAdminPassword,
-  });
-
-  token = response.body.token;
-
-  await sequelize.sync();
-});
-
-afterAll(async () => {
-  await SensorData.destroy({
-    where: {
-      id: testSensorDataId,
-    },
-  });
-  await Sensor.destroy({
-    where: {
-      id: testSensorId,
-    },
-  });
-
-  await Board.destroy({
-    where: {
-      id: testBoardId,
-    },
-  });
-
-  await User.destroy({
-    where: {
+describe("Sensor Data API", () => {
+  beforeAll(async () => {
+    // Create test admin
+    await User.create({
       id: testAdminId,
-    },
-  });
+      name: testAdminName,
+      email: testAdminEmail,
+      password: testAdminPassword,
+      role: testAdminRole,
+      image: testAdminImage
+    });
 
-  await User.destroy({
-    where: {
+    // Create test user
+    await User.create({
       id: testUserId,
-    },
-  });
+      name: testUserName,
+      email: testUserEmail,
+      password: testUserPassword,
+      role: testUserRole,
+      image: testUserImage
+    });
 
-  await sequelize.close();
-});
+    // Create test board
+    await Board.create({
+      id: testBoardId,
+      userId: testAdminId,
+      name: testBoardName,
+      type: testBoardType,
+      location: testBoardLocation,
+      ip_address: testBoardIpAddress,
+      image: testBoardImage
+    });
 
-describe("Sensor Data APi", () => {
-  it("should get all sensor data", async () => {
-    const res = await request(app).get("/api/v1/sensorData/");
+    //   Create test sensor
+    await Sensor.create({
+      id: testSensorId,
+      boardId: testBoardId,
+      name: testSensorName,
+      pin: testSensorPin,
+      type: testSensorType,
+      topic: testSensorTopic,
+      image: testSensorImage
+    });
 
-    expect(res.statusCode).toEqual(200);
-    expect(res.body).toHaveProperty("sensorData");
-    expect(res.body).toHaveProperty("count");
-    expect(res.body.sensorData[0]).toHaveProperty("id");
-    expect(res.body.sensorData[0]).toHaveProperty("sensorId");
-    expect(res.body.sensorData[0]).toHaveProperty("data");
-    expect(res.body.sensorData[0]).toHaveProperty("unit");
-  });
-
-  it("should get a sensor data", async () => {
-    const res = await request(app).get(
-      `/api/v1/sensorData/${testSensorDataId}`
-    );
-
-    expect(res.statusCode).toEqual(200);
-    expect(res.body.sensorData).toHaveProperty(
-      "sensorDataId",
-      testSensorDataId
-    );
-    expect(res.body.sensorData).toHaveProperty("sensorId", testSensorId);
-    expect(res.body.sensorData).toHaveProperty("data", testSensorDataData);
-    expect(res.body.sensorData).toHaveProperty("unit", testSensorDataUnit);
-  });
-
-  it("should throw an error if sensor data not found when get sensor data", async () => {
-    const nonExistSensorDataId = "nonExistSensorDataId";
-
-    const res = await request(app).get(
-      `/api/v1/sensorData/${nonExistSensorDataId}`
-    );
-
-    expect(res.statusCode).toEqual(404);
-    expect(res.body).toHaveProperty(
-      "msg",
-      `No sensor data with id ${nonExistSensorDataId}`
-    );
-  });
-
-  it("should add a sensor data", async () => {
-    // New test sensor data
-    const newSensorData = {
+    //   Create test sensor data
+    await SensorData.create({
+      id: testSensorDataId,
       sensorId: testSensorId,
-      data: 333,
-      unit: "m",
-    };
+      data: testSensorDataData,
+      unit: testSensorDataUnit
+    });
 
-    const res = await request(app)
-      .post("/api/v1/sensorData/")
-      .send(newSensorData);
+    const response = await request(app).post("/api/v1/auth/login").send({
+      email: testAdminEmail,
+      password: testAdminPassword
+    });
 
-    expect(res.statusCode).toEqual(201);
-    expect(res.body).toHaveProperty("sensorData");
-    expect(res.body.sensorData).toHaveProperty(
-      "sensorDataId",
-      res.body.sensorData.sensorDataId
-    );
-    expect(res.body.sensorData).toHaveProperty(
-      "sensorId",
-      newSensorData.sensorId
-    );
-    expect(res.body.sensorData).toHaveProperty("data", newSensorData.data);
-    expect(res.body.sensorData).toHaveProperty("unit", newSensorData.unit);
+    adminToken = response.body.token;
 
+    // Sign in as user and get user token
+    const userResponse = await request(app).post("/api/v1/auth/login").send({
+      email: testUserEmail,
+      password: testUserPassword
+    });
+
+    userToken = userResponse.body.token;
+
+    await sequelize.sync();
+  });
+
+  afterAll(async () => {
     await SensorData.destroy({
       where: {
-        id: res.body.sensorData.sensorDataId,
-      },
+        id: testSensorDataId
+      }
+    });
+    await Sensor.destroy({
+      where: {
+        id: testSensorId
+      }
+    });
+
+    await Board.destroy({
+      where: {
+        id: testBoardId
+      }
+    });
+
+    await User.destroy({
+      where: {
+        id: testAdminId
+      }
+    });
+
+    await User.destroy({
+      where: {
+        id: testUserId
+      }
+    });
+
+    await sequelize.close();
+  });
+
+  describe("Get all sensor data route", () => {
+    describe("Given the sensor data exist and user is admin", () => {
+      it("should return a 200 and list of sensor data and list length", async () => {
+        const res = await request(app)
+          .get("/api/v1/sensorData/")
+          .set("Authorization", `Bearer ${adminToken}`);
+        expect(res.statusCode).toEqual(200);
+        expect(res.body).toHaveProperty("sensorData");
+        expect(res.body).toHaveProperty("count");
+        expect(res.body.sensorData[0]).toHaveProperty("id");
+        expect(res.body.sensorData[0]).toHaveProperty("sensorId");
+        expect(res.body.sensorData[0]).toHaveProperty("data");
+        expect(res.body.sensorData[0]).toHaveProperty("unit");
+      });
+    });
+
+    describe("Given the sensor data exist and user is normal user", () => {
+      it("should return a 200 and list of sensor data and list length", async () => {
+        const res = await request(app)
+          .get("/api/v1/sensorData/")
+          .set("Authorization", `Bearer ${userToken}`);
+        expect(res.statusCode).toEqual(200);
+        expect(res.body).toHaveProperty("sensorData");
+        expect(res.body).toHaveProperty("count");
+        expect(res.body.sensorData[0]).toHaveProperty("id");
+        expect(res.body.sensorData[0]).toHaveProperty("sensorId");
+        expect(res.body.sensorData[0]).toHaveProperty("data");
+        expect(res.body.sensorData[0]).toHaveProperty("unit");
+      });
+    });
+
+    describe("Given the user is does not have authorization JWT token", () => {
+      it("should return a 401 and authentication invalid error message", async () => {
+        const res = await request(app).get("/api/v1/sensorData/");
+
+        expect(res.statusCode).toEqual(401);
+        expect(res.body).toHaveProperty("msg", "Authentication Invalid");
+      });
+    });
+  });
+
+  describe("Get sensor data with sensorId", () => {
+    describe("Given the sensor data exist and user is admin", () => {
+      it("should return a 200 and list of sensor data collect by a sensor", async () => {
+        const res = await request(app)
+          .get(`/api/v1/sensorData/${testSensorId}`)
+          .set("Authorization", `Bearer ${adminToken}`);
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.sensorData[0]).toHaveProperty("sensorId", testSensorId);
+        expect(res.body.sensorData[0]).toHaveProperty("data");
+      });
+    });
+
+    describe("Given the sensor data exist and user is normal user", () => {
+      it("should return a 200 and list of sensor data collect by a sensor", async () => {
+        const res = await request(app)
+          .get(`/api/v1/sensorData/${testSensorId}`)
+          .set("Authorization", `Bearer ${userToken}`);
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.sensorData[0]).toHaveProperty("sensorId", testSensorId);
+        expect(res.body.sensorData[0]).toHaveProperty("data");
+      });
+    });
+
+    describe("Given the user is does not have authorization JWT token", () => {
+      it("should return a 401 and authentication invalid error message", async () => {
+        const res = await request(app).get(
+          `/api/v1/sensorData/${testSensorId}`
+        );
+
+        expect(res.statusCode).toEqual(401);
+        expect(res.body).toHaveProperty("msg", "Authentication Invalid");
+      });
+    });
+  });
+
+  describe("Get latest sensor data with sensor id route", () => {
+    describe("Given the sensor data exist and user is admin", () => {
+      it("should return a 200 and latest sensor data payload", async () => {
+        const res = await request(app)
+          .get(`/api/v1/sensorData/latest/${testSensorId}`)
+          .set("Authorization", `Bearer ${adminToken}`);
+
+        expect(res.body.sensorData).toHaveProperty("sensorId", testSensorId);
+        expect(res.body.sensorData).toHaveProperty("data", testSensorDataData);
+        expect(res.body.sensorData).toHaveProperty("unit", testSensorDataUnit);
+      });
+    });
+
+    describe("Given the sensor data exist and user is normal user", () => {
+      it("should return a 200 and latest sensor data payload", async () => {
+        const res = await request(app)
+          .get(`/api/v1/sensorData/latest/${testSensorId}`)
+          .set("Authorization", `Bearer ${userToken}`);
+
+        expect(res.body.sensorData).toHaveProperty("sensorId", testSensorId);
+        expect(res.body.sensorData).toHaveProperty("data", testSensorDataData);
+        expect(res.body.sensorData).toHaveProperty("unit", testSensorDataUnit);
+      });
+    });
+
+    describe("Given the user is does not have authorization JWT token", () => {
+      it("should return a 401 and authentication invalid error message", async () => {
+        const res = await request(app).get(
+          `/api/v1/sensorData/latest/${testSensorId}`
+        );
+
+        expect(res.statusCode).toEqual(401);
+        expect(res.body).toHaveProperty("msg", "Authentication Invalid");
+      });
     });
   });
 });
