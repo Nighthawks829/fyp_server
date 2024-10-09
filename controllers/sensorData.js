@@ -1,10 +1,8 @@
 const {
   SensorDataSchema,
-  SensorSchema,
   SensorControlsSchema
 } = require("../models/associations");
 const { StatusCodes } = require("http-status-codes");
-const { BadRequestError, NotFoundError } = require("../errors");
 
 const SensorData = SensorDataSchema;
 const SensorControl = SensorControlsSchema;
@@ -95,40 +93,8 @@ const getLatestSensorData = async (req, res) => {
   });
 };
 
-// const addSensorData = async (req, res) => {
-//   const { topic, data, unit } = req.body;
-
-//   const sensor = await SensorSchema.findOne({
-//     where: {
-//       topic: topic
-//     }
-//   });
-
-//   const sensorData = await SensorData.create({
-//     sensorId: sensor.id,
-//     data: data,
-//     unit: unit
-//   });
-
-//   if (sensorData) {
-//     res.status(StatusCodes.CREATED).json({
-//       sensorData: {
-//         sensorDataId: sensorData.id,
-//         sensorId: sensorData.sensorId,
-//         data: sensorData.data,
-//         unit: sensorData.unit
-//       }
-//     });
-//   } else {
-//     throw new BadRequestError(
-//       "Unable to create new sensor data. Try again later"
-//     );
-//   }
-// };
-
 module.exports = {
   getAllSensorData,
   getSensorData,
   getLatestSensorData,
-  // addSensorData
 };
