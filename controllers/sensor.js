@@ -1,9 +1,6 @@
 const {
-  SensorControlsSchema,
   SensorSchema,
   SensorDataSchema,
-  DashboardSchema,
-  NotificationSchema,
   BoardSchema
 } = require("../models/associations");
 const { StatusCodes } = require("http-status-codes");
@@ -203,118 +200,6 @@ const deleteSensor = async (req, res) => {
 
   res.status(StatusCodes.OK).json({ msg: `Success delete sensor ${sensorId}` });
 };
-
-// const getSensorWithSensorControls = async (req, res) => {
-//   const sensor = await Sensor.findByPk(req.params.id, {
-//     include: [
-//       {
-//         model: SensorControlsSchema,
-//         as: "sensorControls"
-//       }
-//     ]
-//   });
-
-//   if (sensor) {
-//     res.status(StatusCodes.OK).json({
-//       sensor: {
-//         sensorId: sensor.id,
-//         boardId: sensor.boardId,
-//         name: sensor.name,
-//         pin: sensor.pin,
-//         type: sensor.type,
-//         topic: sensor.topic,
-//         image: sensor.image,
-//         sensorControls: sensor.sensorControls
-//       }
-//     });
-//   } else {
-//     throw new NotFoundError(`No sensor with id ${req.params.id}`);
-//   }
-// };
-
-// const getSensorWithSensorData = async (req, res) => {
-//   const sensor = await Sensor.findByPk(req.params.id, {
-//     include: [
-//       {
-//         model: SensorDataSchema,
-//         as: "sensorData"
-//       }
-//     ]
-//   });
-
-//   if (sensor) {
-//     res.status(StatusCodes.OK).json({
-//       sensor: {
-//         sensorId: sensor.id,
-//         boardId: sensor.boardId,
-//         name: sensor.name,
-//         pin: sensor.pin,
-//         type: sensor.type,
-//         topic: sensor.topic,
-//         image: sensor.image,
-//         sensorData: sensor.sensorData
-//       }
-//     });
-//   } else {
-//     throw new NotFoundError(`No sensor with id ${req.params.id}`);
-//   }
-// };
-
-// const getSensorWithDashboards = async (req, res) => {
-//   const sensor = await Sensor.findByPk(req.params.id, {
-//     include: [
-//       {
-//         model: DashboardSchema,
-//         as: "dashboards"
-//       }
-//     ]
-//   });
-
-//   if (sensor) {
-//     res.status(StatusCodes.OK).json({
-//       sensor: {
-//         sensorId: sensor.id,
-//         boardId: sensor.boardId,
-//         name: sensor.name,
-//         pin: sensor.pin,
-//         type: sensor.type,
-//         topic: sensor.topic,
-//         image: sensor.image,
-//         dashboards: sensor.dashboards
-//       }
-//     });
-//   } else {
-//     throw new NotFoundError(`No sensor with id ${req.params.id}`);
-//   }
-// };
-
-// const getSensorWithNotifications = async (req, res) => {
-//   const sensor = await Sensor.findByPk(req.params.id, {
-//     include: [
-//       {
-//         model: NotificationSchema,
-//         as: "notifications"
-//       }
-//     ]
-//   });
-
-//   if (sensor) {
-//     res.status(StatusCodes.OK).json({
-//       sensor: {
-//         sensorId: sensor.id,
-//         boardId: sensor.boardId,
-//         name: sensor.name,
-//         pin: sensor.pin,
-//         type: sensor.type,
-//         topic: sensor.topic,
-//         image: sensor.image,
-//         notifications: sensor.notifications
-//       }
-//     });
-//   } else {
-//     throw new NotFoundError(`No sensor with id ${req.params.id}`);
-//   }
-// };
 
 module.exports = {
   getAllSensors,
