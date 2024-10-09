@@ -7,6 +7,8 @@ const User = UserSchema;
 const login = async (req, res) => {
   const { email, password } = req.body;
 
+  console.log(req)
+
   if (!email || !password) {
     throw new BadRequestError("Please provide email and password");
   }
