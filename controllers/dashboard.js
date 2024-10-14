@@ -15,7 +15,8 @@ const getAllDashboard = async (req, res) => {
         as: "sensor",
         attributes: ["type"]
       }
-    ]
+    ],
+    order: [["type", "DESC"],["createdAt", "ASC"]]  // Changed to sort by dashboard type
   });
 
   const formattedDashboards = dashboards.map((dashboard) => {
