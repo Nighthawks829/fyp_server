@@ -4,7 +4,8 @@ const router = express.Router();
 const {
   getAllSensorData,
   getSensorData,
-  getLatestSensorData
+  getLatestSensorData,
+  addSensorData
 } = require("../controllers/sensorData");
 
 const authenticateUser = require("../middleware/authenticationUser");
@@ -12,6 +13,7 @@ const authenticateUser = require("../middleware/authenticationUser");
 router
   .route("/")
   .get(authenticateUser, getAllSensorData)
+  .post(addSensorData);
 router.route("/:id").get(authenticateUser, getSensorData);
 router.route("/latest/:id").get(authenticateUser, getLatestSensorData);
 
