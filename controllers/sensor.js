@@ -49,7 +49,7 @@ const getSensor = async (req, res) => {
   if (sensor) {
     const latestControl = await SensorDataSchema.findOne({
       where: { sensorId: sensor.id },
-      order: [["createdAt", "ASC"]]
+      order: [["createdAt", "DESC"]]
     });
 
     res.status(StatusCodes.OK).json({
@@ -62,7 +62,7 @@ const getSensor = async (req, res) => {
         topic: sensor.topic,
         image: sensor.image,
         boardName: sensor.board ? sensor.board.name : null,
-        value: latestControl ? latestControl.value : null
+        value: latestControl ? latestControl.dataValues.data : null
       }
     });
   } else {
