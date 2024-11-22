@@ -6,6 +6,7 @@ const NotificationSchema = require("./Notifications");
 const sendEmail = require("../utils/sendEmail");
 const sendTelegramMessage = require("../utils/sendTelegramMessage");
 const { BadRequestError } = require("../errors");
+const sendWhatsAppMessage = require("../utils/sendWhatsappMessage");
 
 const SensorDataSchema = sequelize.define(
   "SensorData",
@@ -14,11 +15,11 @@ const SensorDataSchema = sequelize.define(
       type: DataTypes.UUID,
       defaultValue: Sequelize.UUIDV4,
       primaryKey: true,
-      allowNull: false,
+      allowNull: false
     },
     sensorId: {
       type: DataTypes.UUID,
-      allowNull: false,
+      allowNull: false
     },
     data: {
       type: DataTypes.DOUBLE,
@@ -26,20 +27,20 @@ const SensorDataSchema = sequelize.define(
       validate: {
         isNumeric: {
           args: true,
-          msg: "Sensor data should be numeric",
-        },
-      },
+          msg: "Sensor data should be numeric"
+        }
+      }
     },
     unit: {
       type: DataTypes.STRING,
       allowNull: true,
-      defaultValue: "",
+      defaultValue: ""
     },
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
+      defaultValue: DataTypes.NOW
+    }
   },
   {
     timestamps: false,
@@ -48,8 +49,8 @@ const SensorDataSchema = sequelize.define(
       afterCreate: async (sensorData, options) => {
         const notifications = await NotificationSchema.findAll({
           where: {
-            sensorId: sensorData.sensorId,
-          },
+            sensorId: sensorData.sensorId
+          }
         });
 
         // Check each notification's condition
@@ -81,13 +82,18 @@ const SensorDataSchema = sequelize.define(
                 notification.address,
                 notification.message
               );
+            } else if (notification.platform === "whatsapp") {
+              await sendWhatsAppMessage(
+                notification.address,
+                notification.message
+              );
             } else {
               throw new BadRequestError("Invalid notification platform");
             }
           }
         }
-      },
-    },
+      }
+    }
   }
 );
 

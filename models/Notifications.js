@@ -52,7 +52,7 @@ const NotificationSchema = sequelize.define(
     },
     platform: {
       type: DataTypes.ENUM,
-      values: ["email", "telegram"],
+      values: ["email", "telegram","whatsapp"],
       allowNull: false,
     },
     address: {
