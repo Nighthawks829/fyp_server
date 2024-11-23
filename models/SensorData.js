@@ -7,6 +7,7 @@ const sendEmail = require("../utils/sendEmail");
 const sendTelegramMessage = require("../utils/sendTelegramMessage");
 const { BadRequestError } = require("../errors");
 const sendWhatsAppMessage = require("../utils/sendWhatsappMessage");
+const sendSMSMessage = require("../utils/sendSMSMessage");
 
 const SensorDataSchema = sequelize.define(
   "SensorData",
@@ -87,6 +88,8 @@ const SensorDataSchema = sequelize.define(
                 notification.address,
                 notification.message
               );
+            } else if (notification.platform === "sms") {
+              await sendSMSMessage(notification.address, notification.message);
             } else {
               throw new BadRequestError("Invalid notification platform");
             }
