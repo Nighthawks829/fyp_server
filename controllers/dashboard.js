@@ -13,10 +13,13 @@ const getAllDashboard = async (req, res) => {
       {
         model: Sensor,
         as: "sensor",
-        attributes: ["type"]
+        attributes: ["type", "name"]
       }
     ],
-    order: [["type", "DESC"],["createdAt", "ASC"]]  // Changed to sort by dashboard type
+    order: [
+      ["type", "DESC"],
+      ["createdAt", "ASC"]
+    ] // Changed to sort by dashboard type
   });
 
   const formattedDashboards = dashboards.map((dashboard) => {
@@ -30,7 +33,8 @@ const getAllDashboard = async (req, res) => {
       type: dashboardData.type,
       createdAt: dashboardData.createdAt,
       updatedAt: dashboardData.updatedAt,
-      sensorType: dashboardData.sensor ? dashboardData.sensor.type : null
+      sensorType: dashboardData.sensor ? dashboardData.sensor.type : null,
+      sensorName: dashboardData.sensor ? dashboardData.sensor.name : null // Add sensor name
     };
   });
 
