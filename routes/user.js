@@ -14,7 +14,13 @@ const authenticateAdmin = require("../middleware/authenticationAdmin");
 
 require("dotenv").config();
 
-// 1000 request in development. 100 requests for production environment
+/**
+ * Rate Limiter Configuration
+ * 
+ * Production: 100 requests/15 minutes
+ * Development: 1000 requests/15 minutes
+ * Protects against enumeration attacks and abuse
+ */
 const apiLimiter = rateLimiter({
   windowMs: process.env.RATE_WINDOWMS,
   max: process.env.RATE_MAX,
@@ -23,11 +29,27 @@ const apiLimiter = rateLimiter({
   },
 });
 
+
+// User Management Endpoints
+
+/**
+ * Base Route: /users
+ * 
+ * GET - List all users (Admin only)
+ * POST - Create new user (Admin only)
+ */
 router
   .route("/")
   .get(authenticateAdmin, getAllUsers)
   .post(authenticateAdmin, addUser);
 
+/**
+ * Individual User Route: /users/:id
+ * 
+ * GET - Get user profile (Owner or Admin)
+ * PATCH - Update user (Owner or Admin)
+ * DELETE - Delete user (Admin only)
+ */
 router
   .route("/:id")
   .get(authenticateUser, getUser)

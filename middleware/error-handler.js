@@ -1,6 +1,13 @@
 const { StatusCodes } = require("http-status-codes");
 
+/**
+ * Global Error Handling Middleware
+ * 
+ * Centralized error handler that processes different types of Sequelize errors
+ * and normalizes error responses for API clients.
+ */
 const errorHandlerMiddleware = (err, req, res, next) => {
+  // Default error response structure
   let customError = {
     statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
     msg: err.message || "Something went wrong try again later"
@@ -8,13 +15,15 @@ const errorHandlerMiddleware = (err, req, res, next) => {
 
   // console.log(err);
 
-  // This block catches a 'SequelizeUniqueConstraintError' which occurs when a
-  // unique constraint is violated in Sequelize.
+  // Handle unique constraint violations (e.g., duplicate entries)
   if (err.name === "SequelizeUniqueConstraintError") {
     customError.msg = err.errors[0].message;
+
+    // Capitalize first letter of error message
     customError.msg =
       customError.msg.charAt(0).toUpperCase() + customError.msg.slice(1);
 
+    // Custom messages for specific unique constraint violations
     if (customError.msg.slice(0, 10) === "Ip_address") {
       customError.msg = "IP address must be unique";
     }
@@ -27,6 +36,7 @@ const errorHandlerMiddleware = (err, req, res, next) => {
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
 
+  // Handle invalid data type errors (e.g., string instead of integer)
   if (
     err.name === "SequelizeDatabaseError" &&
     err.parent.code === "ER_TRUNCATED_WRONG_VALUE_FOR_FIELD"
@@ -36,9 +46,7 @@ const errorHandlerMiddleware = (err, req, res, next) => {
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
 
-  // This block catches a 'SequelizeDatabaseError' with a 'WARN_DATA_TRUNCATED' code,
-  // which occurs when an attempt is made to insert a value that is not in the enum list
-  // of allowed values for a particular column.
+  // Handle invalid ENUM values
   if (
     err.name === "SequelizeDatabaseError" &&
     err.parent.code === "WARN_DATA_TRUNCATED"
@@ -48,8 +56,7 @@ const errorHandlerMiddleware = (err, req, res, next) => {
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
 
-  // This block catches a 'SequelizeValidationError', which occurs when the data
-  // validation defined in the Sequelize model fails.
+  // Handle model validation errors
   if (err.name === "SequelizeValidationError") {
     customError.msg = err.errors[0].message;
     if (customError.msg.slice(-4) === "null") {
@@ -58,11 +65,13 @@ const errorHandlerMiddleware = (err, req, res, next) => {
     }
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
+
+  // Handle foreign key constraint violations
   if (err.name === "SequelizeForeignKeyConstraintError") {
     customError.msg =
       "Cannot delete or update this record because it's referenced in other records.";
 
-    // Customizing the message further based on the table/field involved
+    // Context-specific messages based on affected relationships
     if (
       err.fields.includes("boardId") &&
       err.parent.sqlMessage.includes("delete")
@@ -102,7 +111,8 @@ const errorHandlerMiddleware = (err, req, res, next) => {
 
     customError.statusCode = StatusCodes.BAD_REQUEST;
   }
-
+  
+  // Return standardized error response
   return res.status(customError.statusCode).json({ msg: customError.msg });
 };
 

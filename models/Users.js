@@ -1,18 +1,28 @@
+// Import required modules and dependencies
 const { DataTypes, Sequelize } = require("sequelize");
-const sequelize = require("../db/connect");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-require("dotenv").config();
+const sequelize = require("../db/connect");   // Database connection instance
+const bcrypt = require("bcrypt");             // Password hashing library
+const jwt = require("jsonwebtoken");          // JSON Web Token implementation
+require("dotenv").config();                   // Load environment variables
 
+/**
+ * User Model Definition
+ * 
+ * Represents application users with authentication capabilities and role-based access control.
+ * Includes password hashing and JWT generation functionality.
+ */
 const UserSchema = sequelize.define(
   "Users",
   {
+    // Unique identifier using UUID
     id: {
       type: DataTypes.UUID,
-      defaultValue: Sequelize.UUIDV4,
+      defaultValue: Sequelize.UUIDV4,   // Auto-generate UUIDv4
       primaryKey: true,
       allowNull: false,
     },
+
+    // User's full name with validation
     name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -23,6 +33,8 @@ const UserSchema = sequelize.define(
         },
       },
     },
+
+    // Unique email address with validation
     email: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -34,6 +46,8 @@ const UserSchema = sequelize.define(
         },
       },
     },
+
+    // Securely stored password with hashing
     password: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -44,17 +58,23 @@ const UserSchema = sequelize.define(
         },
       },
     },
+
+    // Role-based access control (RBAC)
     role: {
       type: DataTypes.ENUM,
       values: ["admin", "user"],
       allowNull: false,
       defaultValue: "user",
     },
+
+    // Optional profile image URL
     image: {
       type: DataTypes.STRING,
       allowNull: true,
       defaultValue: "",
     },
+
+    // Automatic timestamps (manual implementation)
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -67,13 +87,16 @@ const UserSchema = sequelize.define(
     },
   },
   {
-    timestamps: false,
-    freezeTableName: true,
+    // Model configuration
+    timestamps: false,       // Disable automatic timestamps (using manual ones)
+    freezeTableName: true,   // Prevent pluralization of table name
     hooks: {
+      // Password hashing before creation
       beforeCreate: async (user) => {
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(user.password, salt);
       },
+      // Password hashing on update (if changed)
       beforeUpdate: async (user) => {
         if (user.changed("password")) {
           const salt = await bcrypt.genSalt(10);
@@ -85,20 +108,27 @@ const UserSchema = sequelize.define(
   }
 );
 
+/**
+ * Instance Methods
+ */
+
+// Validate password against hashed version
 UserSchema.prototype.validPassword = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
+// Generate JWT token for authentication
 UserSchema.prototype.generateJWT = function () {
   return jwt.sign(
     { userId: this.id, name: this.name, email: this.email, role: this.role },
-    process.env.JWT_SECRET,
+    process.env.JWT_SECRET,   // Secret key from environment
     {
-      expiresIn: process.env.JWT_LIFETIME,
+      expiresIn: process.env.JWT_LIFETIME,    // Token expiration
     }
   );
 };
 
+// Synchronize model with database
 sequelize
   .sync()
   .then(() => {

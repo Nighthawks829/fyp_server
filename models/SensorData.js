@@ -1,27 +1,41 @@
+// Import required modules and dependencies
 const { DataTypes, Sequelize, where } = require("sequelize");
 const sequelize = require("../db/connect");
-
 const NotificationSchema = require("./Notifications");
+const { BadRequestError } = require("../errors");
 
+
+// Import notification delivery services
 const sendEmail = require("../utils/sendEmail");
 const sendTelegramMessage = require("../utils/sendTelegramMessage");
-const { BadRequestError } = require("../errors");
 const sendWhatsAppMessage = require("../utils/sendWhatsappMessage");
 const sendSMSMessage = require("../utils/sendSMSMessage");
 
+
+/**
+ * Sensor Data Model with Alert Triggering
+ * 
+ * Records sensor measurements and automatically triggers notifications
+ * when configured conditions are met.
+ */
 const SensorDataSchema = sequelize.define(
   "SensorData",
   {
+    // Unique identifier using UUIDv4
     id: {
       type: DataTypes.UUID,
       defaultValue: Sequelize.UUIDV4,
       primaryKey: true,
       allowNull: false
     },
+
+    // Foreign key reference to Sensors table
     sensorId: {
       type: DataTypes.UUID,
       allowNull: false
     },
+
+    // Sensor measurement value 
     data: {
       type: DataTypes.DOUBLE,
       allowNull: false,
@@ -32,11 +46,15 @@ const SensorDataSchema = sequelize.define(
         }
       }
     },
+
+    // Measurement unit metadata (e.g., "°C", "lux", "dB")
     unit: {
       type: DataTypes.STRING,
       allowNull: true,
-      defaultValue: ""
+      defaultValue: ""    // Stores measurement unit (e.g., °C, %)
     },
+
+    // Creation timestamp
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -44,20 +62,32 @@ const SensorDataSchema = sequelize.define(
     }
   },
   {
-    timestamps: false,
+    timestamps: false,    // Automatic timestamp
     freezeTableName: true,
     hooks: {
+      /**
+      * Post-Creation Hook: Alert Trigger System
+      * 
+      * After new sensor data is inserted:
+      * 1. Find all notifications linked to this sensor
+      * 2. Check each notification's trigger condition
+      * 3. Send alerts through configured platforms if conditions met
+      */
+
       afterCreate: async (sensorData, options) => {
+
+        // Get all notifications for this sensor
         const notifications = await NotificationSchema.findAll({
           where: {
             sensorId: sensorData.sensorId
           }
         });
 
-        // Check each notification's condition
+        // Process each notification rule
         for (const notification of notifications) {
           let shouldNotify = false;
 
+          // Evaluate condition against threshold
           if (
             (notification.condition === "bigger" &&
               sensorData.data > notification.threshold) ||
@@ -69,6 +99,7 @@ const SensorDataSchema = sequelize.define(
             shouldNotify = true;
           }
 
+          // Send notification if condition met
           if (shouldNotify) {
             if (notification.platform === "email") {
               // Send email notification
@@ -100,6 +131,7 @@ const SensorDataSchema = sequelize.define(
   }
 );
 
+// Synchronize model with database
 sequelize
   .sync()
   .then(() => {

@@ -1,19 +1,32 @@
+// Import required Sequelize components
 const { DataTypes, Sequelize } = require("sequelize");
+// Database connection instance
 const sequelize = require("../db/connect");
 
+/**
+ * Board Model Definition
+ * 
+ * Represents physical IoT boards in the system with network capabilities.
+ * Includes validation for critical fields and automatic timestamp management.
+ */
 const BoardSchema = sequelize.define(
   "Boards",
   {
+    // Unique identifier using UUIDv4
     id: {
       type: DataTypes.UUID,
-      defaultValue: Sequelize.UUIDV4,
+      defaultValue: Sequelize.UUIDV4,   // Auto-generated unique ID
       primaryKey: true,
       allowNull: false,
     },
+
+    // Reference to owning user (foreign key to Users table)
     userId: {
       type: DataTypes.UUID,
       allowNull: false,
     },
+
+    // Board display name with validation
     name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -24,6 +37,8 @@ const BoardSchema = sequelize.define(
         },
       },
     },
+
+    // Board type/category (e.g., "Raspberry Pi", "Arduino", "ESP32")
     type: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -34,6 +49,8 @@ const BoardSchema = sequelize.define(
         },
       },
     },
+
+    // Physical location descriptor
     location: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -44,12 +61,15 @@ const BoardSchema = sequelize.define(
         },
       },
     },
+
+    // Network identifier with strict validation
     ip_address: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
+      unique: true,   // Enforce unique IP addresses
       validate: {
         is: {
+          // Regex pattern for valid IPv4 addresses
           args: [
             "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
           ],
@@ -57,26 +77,32 @@ const BoardSchema = sequelize.define(
         },
       },
     },
+
+    // Optional image URL for board representation
     image: {
       type: DataTypes.STRING,
       allowNull: true,
-      defaultValue: "",
+      defaultValue: "",    // Empty string default instead of null
     },
+
+    // Manual timestamp management
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: DataTypes.NOW,
+      defaultValue: DataTypes.NOW,    // Set on creation
     },
     updatedAt: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: DataTypes.NOW,
+      defaultValue: DataTypes.NOW,     // Set on creation 
     },
   },
   {
-    timestamps: false,
-    freezeTableName: true,
+    // Model configuration
+    timestamps: false,    // Disable automatic timestamps (using manual ones)
+    freezeTableName: true,    // Prevent table name pluralization
     hooks: {
+      // Auto-update timestamp before any update
       beforeUpdate: async (board) => {
         board.updatedAt = new Date();
       },
@@ -84,6 +110,7 @@ const BoardSchema = sequelize.define(
   }
 );
 
+// Synchronize model with database
 sequelize
   .sync()
   .then(() => {

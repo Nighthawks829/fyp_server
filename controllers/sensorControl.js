@@ -5,6 +5,12 @@ const { NotFoundError, BadRequestError } = require("../errors");
 
 const SensorControl = SensorControlsSchema;
 
+/**
+ * Get All Sensor Controls
+ * 
+ * Retrieves complete history of sensor control operations
+ * Note: Consider adding pagination for production use
+ */
 const getAllSensorControls = async (req, res) => {
   const sensorControls = await SensorControl.findAll();
 
@@ -13,6 +19,12 @@ const getAllSensorControls = async (req, res) => {
     .json({ sensorControls, count: sensorControls.length });
 };
 
+/**
+ * Get Single Control Entry
+ * 
+ * Retrieves specific control history entry
+ * Useful for auditing and command tracking
+ */
 const getSensorControl = async (req, res) => {
   const sensorControlId = req.params.id;
 
@@ -32,17 +44,27 @@ const getSensorControl = async (req, res) => {
   }
 };
 
+/**
+ * Create New Sensor Control
+ * 
+ * Handles two main operations:
+ * 1. Records control command in database
+ * 2. Publishes real-time command via MQTT
+ * 
+ * Security Note: Consider adding ownership validation
+ * for production systems
+ */
 const addSensorControl = async (req, res) => {
   const { userId, sensorId, value, topic, unit } = req.body;
 
+  // Create control history record
   const sensorControl = await SensorControl.create({
     userId: userId,
     sensorId: sensorId,
     value: value
   });
 
-  // const sensor = await Sensor.findByPk(sensorId);
-  // const topic = sensor.topic;
+  // Publish real-time control command
   const payload = JSON.stringify({
     value: value,
     unit: unit
