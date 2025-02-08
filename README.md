@@ -46,7 +46,7 @@ git clone https://github.com/Nighthawks829/fyp_server.git
 cd fyp_server
 ```
 
-2. Install dependencies
+3. Install dependencies
 
 ```sh
 npm install
@@ -264,7 +264,10 @@ git push origin feature-branch
 This project is licensed under the MIT License.
 
 ## Contact
+
 Liew Shai Sam - liew_shai_bi21@iluv.ums.edu.my
+
+[IoT Monitoring and Control Ecosystem with MQTT Server Integration and Web Technologies](https://github.com/Nighthawks829/fyp_website)
 
 ## Acknowledgements
 
